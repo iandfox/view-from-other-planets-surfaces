@@ -12,12 +12,12 @@
 
 <template>
 	<p><small>
-		<div style="display: grid; ">
+		<div style="display: grid;">
 			<strong>Last Update:</strong>&nbsp;
 			<span>
 				{{lastUpdated}}
 				<br>
-				<em>{{numberFormat.format(secondsSinceLastUpdate / 1000)}} seconds ago</em>
+				<em><Timer :start-epoch="lastUpdatedEpoch"></Timer></em>
 			</span>
 		</div>
 	</small></p>
@@ -39,28 +39,14 @@
 
 <script>
 	import { SolarCoordinates } from '../calculations/SC.class';
+	import Timer from './Timer';
 	
 	export default {
 		name: 'SC',
+		components: {Timer},
 		
 		mounted() {
 			this.draw();
-			
-			
-			const timer = () => {
-				this.secondsSinceLastUpdate = Date.now() - this.lastUpdatedEpoch;
-				// this.timerLoopingId = setTimeout(timer, 1000);
-				this.timerLoopingId = requestAnimationFrame(timer);
-			};
-			timer();
-		},
-		
-		unmounted() {
-			console.log('SC unmounted, stopping timer');
-			// lol since i can't decide what to use, i wonder if there's any harm in using all of them
-			clearTimeout(this.timerLoopingId);
-			clearInterval(this.timerLoopingId);
-			cancelAnimationFrame(this.timerLoopingId);
 		},
 		
 		methods: {
@@ -115,16 +101,7 @@
 		
 		data() {
 			return {
-				numberFormat: new Intl.NumberFormat(
-					'en-US',
-					{
-						minimumFractionDigits: 1,
-						maximumFractionDigits: 1
-					}
-				),
-				timerLoopingId: 0, // either animation id or timeout id or interval id, apparently depending on how many times i change my mind.
 				lastUpdatedEpoch: Date.now(),
-				secondsSinceLastUpdate: 0,
 				lastUpdated: '',
 				
 				julianDay: 2459404.5,
