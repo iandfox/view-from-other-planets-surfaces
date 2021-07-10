@@ -12,12 +12,18 @@
 
 <template>
 	<div class="grid">
-		<canvas
-			v-for="chart in charts"
-			:id="'canvas_' + chart.y"
-			width="1366"
-			height="768"
-		></canvas>
+		<div class="graph" v-for="chart in charts">
+			<div class="title"><small><code>({{chart.x === 'time' ? 't' : chart.x}}, {{chart.y}})</code></small> - {{chart.title}}</div>
+			<canvas
+				:id="'canvas_' + chart.y"
+				width="1366"
+				height="768"
+			></canvas>
+			<details v-if="chart.description">
+				<summary><small>Description</small></summary>
+				{{chart.description}}
+			</details>
+		</div>
 	</div>
 </template>
 
@@ -27,8 +33,63 @@
 	export default {
 		name: 'SC',
 		
+		mounted() {
+			this.draw();
+		},
+		
+		methods: {
+			draw() {
+				// console.clear();
+				console.groupCollapsed('Drawing charts at ' + ((new Date())));
+				this.charts.forEach((chart) => {
+					const canvas = window['canvas_' + chart.y];
+					const x_values = [];
+					const y_values = [];
+					for (let i = 0; i < 24; i++) {
+						const t = i / 24; // in days
+						const JD = this.julianDay + (t);
+						this.sun.JD = JD;
+						x_values.push(t);
+						y_values.push(this.sun[chart.y]);
+					}
+					
+					// Find the range for both
+					const range_x = {min: Math.min(...x_values), max: Math.max(...x_values), length: null};
+					range_x.length = range_x.max - range_x.min;
+					const range_y = {min: Math.min(...y_values), max: Math.max(...y_values), length: null};
+					range_y.length = range_y.max - range_y.min;
+					
+					const REAL_TO_CANVAS = {
+						x: canvas.width / range_x.length,
+						y: canvas.height / range_y.length,
+					};
+					const CANVAS_TO_REAL = {
+						x: range_x.length / canvas.width,
+						y: range_y.length / canvas.height,
+					};
+					
+					
+					console.log({
+						canvas,
+						range_x,
+						range_y,
+						REAL_TO_CANVAS,
+						CANVAS_TO_REAL,
+						'testcoord': {
+							x: REAL_TO_CANVAS.x * (range_x.min + 0.5 * range_x.length),
+							y: REAL_TO_CANVAS.y * (range_y.min + 0.5 * range_y.length),
+						},
+					});
+					
+				});
+				console.groupEnd();
+			},
+		},
+		
 		data() {
 			return {
+				julianDay: 2459404.5,
+				
 				/**
 				 * getJulianDay(2021, 07, 09) = 2459404.5
 				 */
@@ -63,6 +124,7 @@
 	}
 </script>
 
+
 <style scoped>
 	canvas {
 		box-shadow: 0 0 5px 0 black;
@@ -72,6 +134,22 @@
 	
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	}
+	
+	.graph {}
+	.graph .title {
+		background: var(--color-light);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	
+	.graph .title:not(:hover) {
+		overflow: hidden;
+	}
+	
+	.graph .title:hover {
+		transform: translate3d(0,0,0);
+		z-index: 10;
 	}
 </style>
