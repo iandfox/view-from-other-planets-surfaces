@@ -72,6 +72,7 @@
 					const range_y = {min: Math.min(...y_values), max: Math.max(...y_values), length: null};
 					range_y.length = range_y.max - range_y.min;
 					
+					// Coordinate transformations. For some reason the "FOO_TO_BAR" is easier for me to use than "BAR_PER_FOO" -- i always mix up the latter.
 					const REAL_TO_CANVAS = {
 						x: canvas.width / range_x.length,
 						y: canvas.height / range_y.length,
@@ -82,13 +83,15 @@
 					};
 					
 					
+					
+					
 					console.log({
 						canvas,
 						range_x,
 						range_y,
 						REAL_TO_CANVAS,
 						CANVAS_TO_REAL,
-						'testcoord': {
+						'test_centerRealToCanvas': {
 							x: REAL_TO_CANVAS.x * (range_x.min + 0.5 * range_x.length),
 							y: REAL_TO_CANVAS.y * (range_y.min + 0.5 * range_y.length),
 						},

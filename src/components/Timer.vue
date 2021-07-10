@@ -17,7 +17,7 @@
 
 <template>
 	<slot>
-		{{numberFormat.format(secondsSinceLastUpdate / 1000)}} seconds ago
+		{{pretty}} seconds ago
 	</slot>
 </template>
 
@@ -43,23 +43,20 @@
 					}
 				),
 				timerLoopingId: 0, // either animation id or timeout id or interval id, apparently depending on how many times i change my mind.
+				secondsSinceLastUpdate: 0,
 			};
 		},
 		
 		computed: {
-			/** seconds since startEpoch */
-			delta() {
-				return (Date.now() - this.startEpoch) / 1000;
-			},
-			
+			/** formatted seconds since startEpoch */
 			pretty() {
-				return this.numberFormat.format(this.delta);
+				return this.numberFormat.format(this.secondsSinceLastUpdate);
 			},
 		},
 		
 		mounted() {
 			const timer = () => {
-				this.secondsSinceLastUpdate = Date.now() - this.lastUpdatedEpoch;
+				this.secondsSinceLastUpdate = (Date.now() - this.startEpoch) / 1000;
 				// this.timerLoopingId = setTimeout(timer, 1000);
 				this.timerLoopingId = requestAnimationFrame(timer);
 			};
