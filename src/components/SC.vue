@@ -11,6 +11,16 @@
 -->
 
 <template>
+	<p><small>
+		<div style="display: grid; ">
+			<strong>Last Update:</strong>&nbsp;
+			<span>
+				{{lastUpdated}}
+				<br>
+				<em>{{numberFormat.format(secondsSinceLastUpdate / 1000)}} seconds ago</em>
+			</span>
+		</div>
+	</small></p>
 	<div class="grid">
 		<div class="graph" v-for="chart in charts">
 			<div class="title"><small><code>({{chart.x === 'time' ? 't' : chart.x}}, {{chart.y}})</code></small> - {{chart.title}}</div>
@@ -35,12 +45,29 @@
 		
 		mounted() {
 			this.draw();
+			
+			
+			const timer = () => {
+				this.secondsSinceLastUpdate = Date.now() - this.lastUpdatedEpoch;
+				// this.timerLoopingId = setTimeout(timer, 1000);
+				this.timerLoopingId = requestAnimationFrame(timer);
+			};
+			timer();
+		},
+		
+		unmounted() {
+			console.log('SC unmounted, stopping timer');
+			// lol since i can't decide what to use, i wonder if there's any harm in using all of them
+			clearTimeout(this.timerLoopingId);
+			clearInterval(this.timerLoopingId);
+			cancelAnimationFrame(this.timerLoopingId);
 		},
 		
 		methods: {
 			draw() {
 				// console.clear();
-				console.groupCollapsed('Drawing charts at ' + ((new Date())));
+				this.lastUpdated = (new Date()).toString();
+				console.groupCollapsed('Drawing charts at ' + this.lastUpdated);
 				this.charts.forEach((chart) => {
 					const canvas = window['canvas_' + chart.y];
 					const x_values = [];
@@ -88,6 +115,18 @@
 		
 		data() {
 			return {
+				numberFormat: new Intl.NumberFormat(
+					'en-US',
+					{
+						minimumFractionDigits: 1,
+						maximumFractionDigits: 1
+					}
+				),
+				timerLoopingId: 0, // either animation id or timeout id or interval id, apparently depending on how many times i change my mind.
+				lastUpdatedEpoch: Date.now(),
+				secondsSinceLastUpdate: 0,
+				lastUpdated: '',
+				
 				julianDay: 2459404.5,
 				
 				/**
