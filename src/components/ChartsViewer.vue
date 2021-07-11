@@ -147,13 +147,23 @@
 					if (xSlug === 'time') {
 						x_values.push(t);
 					} else {
-						x_values.push(this.o[xSlug]);
+						let val = this.o;
+						const slugParts = xSlug.split('.'); // Account for, say, "heliocentric.x"
+						for (let i = 0; i < slugParts.length; i++) {
+							val = val[slugParts[i]];
+						}
+						x_values.push(val);
 					}
 					
 					if (ySlug === 'time') {
 						y_values.push(t);
 					} else {
-						y_values.push(this.o[ySlug]);
+						let val = this.o;
+						const slugParts = ySlug.split('.'); // Account for, say, "heliocentric.y"
+						for (let i = 0; i < slugParts.length; i++) {
+							val = val[slugParts[i]];
+						}
+						y_values.push(val);
 					}
 				}
 				
