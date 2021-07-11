@@ -1,0 +1,220 @@
+/**
+ * Moon viewing
+ *
+ * @created 2021-07-11
+ */
+
+class Moon {
+	constructor(JD = 0) {
+		this.JD = JD;
+		
+		this.DEG_TO_RAD = Math.PI / 180;
+		this.RAD_TO_DEG = 180 / Math.PI;
+		
+		this.ONE_AU = 149597870700; // 1 AU defined as 149,597,870,700 meters
+		
+		this.tolerance = 1e-6;
+		
+		
+		// TODO 2021-07-11: params i need
+		this.semimajorAxis = []; // [initial, per century]
+		this.eccentricity = []; // [initial, per century]
+		this.inclination_deg = []; // [initial, per century]
+		this.meanLongitude_deg = []; // [initial, per century]
+		this.longitudeOfPeriapsis_deg = []; // [initial, per century]
+		this.longitudeOfTheAscendingNode_deg = []; // [initial, per century]
+	}
+	
+	/**
+	 * Math.sin, but for angles given in degrees.
+	 *
+	 * @since 2021-07-11
+	 *
+	 * @param {number} angleInDegrees
+	 *
+	 * @return {number}
+	 */
+	dsin(angleInDegrees) {
+		return Math.sin(angleInDegrees * this.DEG_TO_RAD);
+	}
+	
+	/**
+	 * Math.cos, but for angles given in degrees.
+	 *
+	 * @since 2021-07-11
+	 *
+	 * @param {number} angleInDegrees
+	 *
+	 * @return {number}
+	 */
+	dcos(angleInDegrees) {
+		return Math.cos(angleInDegrees * this.DEG_TO_RAD);
+	}
+	
+	// TODO 2021-07-11: mod 360 for all of these
+	
+	/**
+	 * Julian centuries of 36525 ephemeris days from the epoch J2000.0 (2000 January 1.5 TD)
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get T() {
+		return (this.JD - 2451545) / 36525;
+	}
+	
+	
+	///
+	/// Orbital params
+	///
+	
+	
+	/**
+	 * Semi-major axis. Longest diameter of an ellipse
+	 *
+	 * @since 2021-07-11
+	 *
+	 * @return {number}
+	 */
+	get a() {
+		return this.semimajorAxis[0] + this.semimajorAxis[1] * this.T;
+	}
+	
+	
+	/**
+	 * Eccentricity of the moon's orbit
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get e() {
+		return this.eccentricity[0] + this.eccentricity[1] * this.T;
+	}
+	
+	
+	/**
+	 * Inclination, the tilt of the moon's orbit around its planet
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get i_deg() {
+		return this.inclination_deg[0] + this.inclination_deg[1] * this.T;
+	}
+	
+	
+	/**
+	 * Mean longitude. NOTE: in `try-3_calculate-position.js`, this is just "L" but I'm pretty sure "L" is the true longitude. TODO 2021-07-11: come back to this.
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get L0_deg() {
+		return this.meanLongitude_deg[0] + this.meanLongitude_deg[1] * this.T;
+	}
+	
+	
+	/**
+	 * Longitude of the periapsis
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get p_deg() {
+		return this.longitudeOfPeriapsis_deg[0] + this.longitudeOfPeriapsis_deg[1] * this.T;
+	}
+	
+	
+	/**
+	 * Longitude of the ascending node
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get W_deg() {
+		return this.longitudeOfTheAscendingNode_deg[0] + this.longitudeOfTheAscendingNode_deg[1] * this.T;
+	}
+	
+	
+	///
+	/// Derived values
+	///
+	
+	
+	/**
+	 * Argument of the perihelion
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get w_deg() {
+		return this.p_deg - this.W_deg; // note to self: this means i could derive any one given the other two. might be useful for diff data sources
+	}
+	
+	
+	/**
+	 * Mean anomaly. According to wikipedia:
+	 *     An orbiting body's mean longitude is calculated l = Ω + ω + M, where Ω is the longitude of the ascending
+	 *     node, ω is the argument of the pericenter and M is the mean anomaly, the body's angular distance from the
+	 *     pericenter as if it moved with constant speed rather than with the variable speed of an elliptical orbit.
+	 *     Its true longitude is calculated similarly, L = Ω + ω + ν, where ν is the true anomaly.
+	 *
+	 * Therefore:
+	 *     M = l - Ω - ω
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get M_deg() {
+		return this.L0_deg   // mean longitude
+		       - this.w_deg  // argument of perihelion
+		       - this.p_deg; // longitude of periapsis
+	}
+	
+	
+	/**
+	 * Eccentric anomaly
+	 *     Solve M = E - e* sin(E) for E.
+	 *           where e is "e_deg"
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get E_deg() {
+		const e_deg = (180 * Math.PI) * this.e;
+		let E_deg = this.M_deg + e_deg * this.dsin(this.M_deg);
+		let sanity = 0;
+		while (true && ++sanity < 1000) {
+			const dM = this.M_deg - (E_deg - e_deg * this.dsin(E_deg));
+			const dE = dM / (1 - this.e * Math.dcos(E_deg));
+			E_deg += dE;
+			if (Math.abs(dE) < this.tolerance) {
+				break;
+			}
+		}
+		
+		return E_deg;
+	}
+	
+	
+	
+	/**
+	 *
+	 *
+	 * @since 2021-04-23
+	 *
+	 * @return {number}
+	 */
+	get foo() {
+		//
+	}
+}

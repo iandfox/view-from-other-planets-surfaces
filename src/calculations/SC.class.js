@@ -40,11 +40,11 @@ function getJulianDay(Y, M, D) {
 
 class SolarCoordinates {
 	
-	constructor(JD) {
+	constructor(JD = 0) {
+		this.JD = JD;
+		
 		this.DEG_TO_RAD = Math.PI / 180;
 		this.RAD_TO_DEG = 180 / Math.PI;
-		
-		this.JD = JD;
 	}
 	
 	
