@@ -1,6 +1,7 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 import Home from '../views/Home.vue'
 import SunViewer from '../views/SunViewer';
+import MoonViewer from '../views/MoonViewer';
 
 const routes = [
 	{
@@ -18,7 +19,13 @@ const routes = [
 		// component: function() {
 		// 	return import(/* webpackChunkName: "about" */ '../views/About.vue')
 		// }
-	}
+	},
+	
+	{
+		path: '/moon',
+		name: 'MoonViewer',
+		component: MoonViewer,
+	},
 ];
 
 const router = createRouter({

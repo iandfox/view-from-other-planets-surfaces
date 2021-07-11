@@ -3,6 +3,8 @@
 		<router-link to="/">Home</router-link>
 		|
 		<router-link to="/sun">Sun</router-link>
+		|
+		<router-link to="/moon">Moon</router-link>
 	</div>
 	<router-view/>
 </template>

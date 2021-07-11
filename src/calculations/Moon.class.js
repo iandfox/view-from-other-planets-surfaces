@@ -4,7 +4,12 @@
  * @created 2021-07-11
  */
 
+import { MoonParameters } from './OrbitalParameters';
+
 class Moon {
+	
+	
+	// TODO: orbital params as args.
 	constructor(JD = 0) {
 		this.JD = JD;
 		
@@ -15,14 +20,12 @@ class Moon {
 		
 		this.tolerance = 1e-6;
 		
-		
-		// TODO 2021-07-11: params i need
-		this.semimajorAxis = []; // [initial, per century]
-		this.eccentricity = []; // [initial, per century]
-		this.inclination_deg = []; // [initial, per century]
-		this.meanLongitude_deg = []; // [initial, per century]
-		this.longitudeOfPeriapsis_deg = []; // [initial, per century]
-		this.longitudeOfTheAscendingNode_deg = []; // [initial, per century]
+		this.semimajorAxis = MoonParameters.semimajorAxis; // [initial, per century]
+		this.eccentricity = MoonParameters.eccentricity; // [initial, per century]
+		this.inclination_deg = MoonParameters.inclination; // [initial, per century]
+		this.meanLongitude_deg = MoonParameters.meanLongitude; // [initial, per century]
+		this.longitudeOfPeriapsis_deg = MoonParameters.longitudeOfPeriapsis; // [initial, per century]
+		this.longitudeOfTheAscendingNode_deg = MoonParameters.longitudeOfTheAscendingNode; // [initial, per century]
 	}
 	
 	/**
@@ -102,7 +105,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get i_deg() {
-		return this.inclination_deg[0] + this.inclination_deg[1] * this.T;
+		return (this.inclination_deg[0] + this.inclination_deg[1] * this.T) % 360;
 	}
 	
 	
@@ -114,7 +117,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get L0_deg() {
-		return this.meanLongitude_deg[0] + this.meanLongitude_deg[1] * this.T;
+		return (this.meanLongitude_deg[0] + this.meanLongitude_deg[1] * this.T) % 360;
 	}
 	
 	
@@ -126,7 +129,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get p_deg() {
-		return this.longitudeOfPeriapsis_deg[0] + this.longitudeOfPeriapsis_deg[1] * this.T;
+		return (this.longitudeOfPeriapsis_deg[0] + this.longitudeOfPeriapsis_deg[1] * this.T) % 360;
 	}
 	
 	
@@ -138,7 +141,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get W_deg() {
-		return this.longitudeOfTheAscendingNode_deg[0] + this.longitudeOfTheAscendingNode_deg[1] * this.T;
+		return (this.longitudeOfTheAscendingNode_deg[0] + this.longitudeOfTheAscendingNode_deg[1] * this.T) % 360;
 	}
 	
 	
@@ -155,7 +158,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get w_deg() {
-		return this.p_deg - this.W_deg; // note to self: this means i could derive any one given the other two. might be useful for diff data sources
+		return (this.p_deg - this.W_deg) % 360; // note to self: this means i could derive any one given the other two. might be useful for diff data sources
 	}
 	
 	
@@ -174,9 +177,11 @@ class Moon {
 	 * @return {number}
 	 */
 	get M_deg() {
-		return this.L0_deg   // mean longitude
-		       - this.w_deg  // argument of perihelion
-		       - this.p_deg; // longitude of periapsis
+		return (
+			this.L0_deg   // mean longitude
+			- this.w_deg  // argument of perihelion
+			- this.p_deg
+		) % 360; // longitude of periapsis
 	}
 	
 	
@@ -195,26 +200,18 @@ class Moon {
 		let sanity = 0;
 		while (true && ++sanity < 1000) {
 			const dM = this.M_deg - (E_deg - e_deg * this.dsin(E_deg));
-			const dE = dM / (1 - this.e * Math.dcos(E_deg));
+			const dE = dM / (1 - this.e * this.dcos(E_deg));
 			E_deg += dE;
 			if (Math.abs(dE) < this.tolerance) {
 				break;
 			}
 		}
 		
-		return E_deg;
+		return E_deg % 360;
 	}
-	
-	
-	
-	/**
-	 *
-	 *
-	 * @since 2021-04-23
-	 *
-	 * @return {number}
-	 */
-	get foo() {
-		//
-	}
+}
+
+
+export {
+	Moon
 }
