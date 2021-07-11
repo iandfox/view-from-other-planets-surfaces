@@ -36,6 +36,7 @@
 				:id="'canvas_' + chart.y"
 				width="1366"
 				height="768"
+				:ref="'canvas_' + chart.y"
 			></canvas>
 			<details v-if="chart.description">
 				<summary><small>Description</small></summary>
@@ -110,7 +111,7 @@
 		methods: {
 			draw() {
 				this.lastUpdated = (new Date()).toString();
-				console.groupCollapsed('Drawing charts at ' + this.lastUpdated);
+				console.group('Drawing charts at ' + this.lastUpdated);
 				
 				this.charts.forEach((chart) => {
 					this.drawChart(chart);
@@ -121,7 +122,7 @@
 			
 			// draw a fresh chart
 			drawChart(chart) {
-				const canvas = window['canvas_' + chart.y];
+				const canvas = this.$refs['canvas_' + chart.y];
 				const ctx = canvas.getContext('2d');
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -132,7 +133,7 @@
 			
 			// draw on a chart that potentially already has stuff on it
 			drawValuesOnChart(chart, xSlug = 'time', ySlug) {
-				const canvas = window['canvas_' + chart.y];
+				const canvas = this.$refs['canvas_' + chart.y];
 				const ctx = canvas.getContext('2d');
 				
 				// Calculate all the points
@@ -260,6 +261,40 @@
 				
 				ctx.fillStyle = 'red';
 				
+				
+				const finishedDrawingPoints = () => {
+					// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
+					ctx.restore(); // from [cartesian], scale, and translate
+					
+					// Draw axis labels in "dumb"/obvious places.
+					ctx.fillStyle = 'purple';
+					ctx.font = '50px serif';
+					
+					ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+					ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.min)})`, 0, canvas.height); // bottom left
+					ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+					ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.max)})`, 0, 0); // top left
+					ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+					ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.max)})`, canvas.width, 0); // top right
+					ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+					ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.min)})`, canvas.width, canvas.height); // bottom right
+					
+					
+					
+					// debug text. TODO: delete
+					// ctx.font = '60px monospace';
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'bottom';
+					ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
+					ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
+					
+					
+					
+					// debug - draw a square in the top left, to ensure i know that things are actually working.
+					ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
+					ctx.fillRect(50, 50, 50, 50); // TODO delete
+				};
+				
 				const alphaStart = 0.1;
 				const alphaEnd = 1;
 				const alphaDelta = (alphaEnd - alphaStart) / x_values.length;
@@ -268,41 +303,19 @@
 				for (let i = 0; i < x_values.length; i++) {
 					// ctx.globalAlpha = alphaStart + (i * alphaDelta); // "fade in" and from red to green as time goes on
 					// setTimeout(() => {
-					ctx.fillStyle = `rgba(${255 - (i * colorDelta)}, ${i * colorDelta}, 0, ${alphaStart + (i * alphaDelta)})`;
-					plotPoint(x_values[i], y_values[i]); // TODO IAN I STOPPED HERE. I THINK  THE PROBLEM IS THE TIMEOUT -- LIKE MAYVE IT DOESNT CALCULATE IT TILL THE END.
-					// }, 100 * i);
+					const xx = x_values[i];
+					const yy = y_values[i];
+					setTimeout(() => {
+						ctx.fillStyle = `rgba(${255 - (i * colorDelta)}, ${i * colorDelta}, 0, ${alphaStart + (i * alphaDelta)})`;
+						plotPoint(xx, yy);
+						
+						if (i >= x_values.length - 1) {
+							// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
+							finishedDrawingPoints();
+						}
+					}, 5 * i);
 				}
-				
-				ctx.restore(); // from [cartesian], scale, and translate
-				
-				
-				// Draw axis labels in "dumb"/obvious places.
-				ctx.fillStyle = 'purple';
-				ctx.font = '50px serif';
-				
-				ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.min)})`, 0, canvas.height); // bottom left
-				ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.max)})`, 0, 0); // top left
-				ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.max)})`, canvas.width, 0); // top right
-				ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.min)})`, canvas.width, canvas.height); // bottom right
-				
-				
-				
-				// debug text. TODO: delete
-				// ctx.font = '60px monospace';
-				ctx.textAlign = 'center';
-				ctx.textBaseline = 'bottom';
-				ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
-				ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
-				
-				
-				
-				// debug - draw a square in the top left, to ensure i know that things are actually working.
-				ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
-				ctx.fillRect(50, 50, 50, 50); // TODO delete
+				console.log({xSlug, ySlug, x_values, y_values}); // TODO delete eventually
 				
 				console.log({ // TODO delete
 					canvas,

@@ -105,7 +105,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get i_deg() {
-		return (this.inclination_deg[0] + this.inclination_deg[1] * this.T) % 360;
+		return ((this.inclination_deg[0] + this.inclination_deg[1] * this.T) % 360 + 360) % 360;
 	}
 	
 	
@@ -117,7 +117,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get L0_deg() {
-		return (this.meanLongitude_deg[0] + this.meanLongitude_deg[1] * this.T) % 360;
+		return ((this.meanLongitude_deg[0] + this.meanLongitude_deg[1] * this.T) % 360 + 360) % 360;
 	}
 	
 	
@@ -129,7 +129,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get p_deg() {
-		return (this.longitudeOfPeriapsis_deg[0] + this.longitudeOfPeriapsis_deg[1] * this.T) % 360;
+		return ((this.longitudeOfPeriapsis_deg[0] + this.longitudeOfPeriapsis_deg[1] * this.T) % 360 + 360) % 360;
 	}
 	
 	
@@ -141,7 +141,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get W_deg() {
-		return (this.longitudeOfTheAscendingNode_deg[0] + this.longitudeOfTheAscendingNode_deg[1] * this.T) % 360;
+		return ((this.longitudeOfTheAscendingNode_deg[0] + this.longitudeOfTheAscendingNode_deg[1] * this.T) % 360 + 360) % 360;
 	}
 	
 	
@@ -158,7 +158,7 @@ class Moon {
 	 * @return {number}
 	 */
 	get w_deg() {
-		return (this.p_deg - this.W_deg) % 360; // note to self: this means i could derive any one given the other two. might be useful for diff data sources
+		return ((this.p_deg - this.W_deg) % 360 + 360) % 360; // note to self: this means i could derive any one given the other two. might be useful for diff data sources
 	}
 	
 	
@@ -177,11 +177,11 @@ class Moon {
 	 * @return {number}
 	 */
 	get M_deg() {
-		return (
+		return ((
 			this.L0_deg   // mean longitude
 			- this.w_deg  // argument of perihelion
 			- this.p_deg
-		) % 360; // longitude of periapsis
+		) % 360 + 360) % 360; // longitude of periapsis
 	}
 	
 	
@@ -207,7 +207,7 @@ class Moon {
 			}
 		}
 		
-		return E_deg % 360;
+		return (E_deg % 360 + 360) % 360;
 	}
 }
 

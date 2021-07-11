@@ -25,6 +25,7 @@
 	export default {
 		name: 'MoonParams',
 		components: {ChartsViewer},
+		
 		data() {
 			return {
 				moon: new Moon(2459404.5),

@@ -9,17 +9,17 @@
 
 <template>
 	<h1>Look it's a moon</h1>
+	<h2>Coords</h2>
+	<MoonCoords></MoonCoords>
+	<h2>Params</h2>
 	<MoonParams></MoonParams>
 </template>
 
 <script>
 	import MoonParams from '../components/MoonParams';
+	import MoonCoords from '../components/MoonCoords';
 	export default {
 		name: 'MoonViewer',
-		components: { MoonParams },
+		components: {MoonCoords, MoonParams },
 	}
 </script>
-
-<style scoped>
-
-</style>
