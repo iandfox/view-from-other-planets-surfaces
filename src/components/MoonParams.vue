@@ -1,9 +1,9 @@
 <!--
- - Vue Component: MoonCoordinates
+ - Vue Component: MoonParams
  -     Shows charts of moon params
  -     
  -     Example usage:
- -         <MoonCoordinates></MoonCoordinates>
+ -         <MoonParams></MoonParams>
  - 
  - @created 2021-07-11
 -->
@@ -20,10 +20,10 @@
 
 <script>
 	import ChartsViewer from './ChartsViewer';
-	import {Moon} from '../calculations/Moon.class';
+	import { Moon } from '../calculations/Moon.class';
 	
 	export default {
-		name: 'MoonCoordinates',
+		name: 'MoonParams',
 		components: {ChartsViewer},
 		data() {
 			return {

@@ -9,14 +9,14 @@
 
 <template>
 	<h1>Look it's a moon</h1>
-	<MoonCoordinates></MoonCoordinates>
+	<MoonParams></MoonParams>
 </template>
 
 <script>
-	import MoonCoordinates from '../components/MoonCoordinates';
+	import MoonParams from '../components/MoonParams';
 	export default {
 		name: 'MoonViewer',
-		components: {MoonCoordinates},
+		components: { MoonParams },
 	}
 </script>
 

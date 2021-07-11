@@ -12,8 +12,6 @@
  -         ></ChartsViewer>
  - 
  - @created 2021-07-11
- - 
- - @since x.x.x
 -->
 
 <template>
