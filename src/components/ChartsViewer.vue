@@ -80,6 +80,7 @@
 <script>
 	import { toRaw } from 'vue';
 	import Timer from './Timer';
+	import {ChartDrawer} from '../calculations/ChartDrawer.class';
 	export default {
 		name: 'ChartsViewer',
 		components: {Timer},
@@ -117,7 +118,7 @@
 		
 		data() {
 			return {
-				julianDay: 0,
+				julianDay: 2459404.5,
 				
 				julianDayHistory: [],
 				maxJulianDayHistoryLength: 100,
@@ -134,10 +135,25 @@
 						maximumFractionDigits: 2
 					}
 				),
+				
+				drawers: [],
+				
+				charts_processed: [],
 			}
 		},
 		
 		mounted() {
+			this.charts_processed = this.charts.map((chart, index) => {
+				chart.canvasId = 'canvas_' + chart.y + '__' + index;
+				chart.jdHistory = [];
+				
+				const {x_values, y_values, jd_values} = this.extractCoordinates(this.julianDayStart, this.julianDayEnd, this.julianDayStep, chart.x, chart.y);
+				
+				chart.drawer = new ChartDrawer(this.$refs[chart.canvasId], chart, x_values, y_values, jd_values);
+				
+				return chart;
+			});
+			
 			this.julianDay = this.julianDayStart;
 			
 			this.draw();
@@ -157,17 +173,49 @@
 					this.julianDayHistory.shift();
 				}
 				
+				if (this.isDrawing > 0) {
+					return;
+				}
+				
+				this.isDrawing += 1;
+				
 				this.charts.forEach((chart, index) => {
+					if (! chart.cached) {
+						return;
+					}
 					
 					const canvasId = 'canvas_' + chart.y + '__' + index;
 					const canvas = this.$refs[canvasId];
 					const ctx = canvas.getContext('2d');
-					if (chart.cached) {
-						ctx.drawImage(chart.cached, 0, 0);
+					
+					if (! chart.REAL_TO_CANVAS || ! chart.range_x || ! chart.range_y) {
+						const { x_values, y_values } = this.extractCoordinates(
+							this.julianDayStart,
+							this.julianDayEnd,
+							this.julianDayStep,
+							chart.x,
+							chart.y
+						);
+						const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
+						const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
+						
+						chart.REAL_TO_CANVAS = REAL_TO_CANVAS;
+						chart.range_x = range_x;
+						chart.range_y = range_y;
 					}
 					
+					this.prepCanvasForGraphing(ctx, canvas, chart.range_x, chart.REAL_TO_CANVAS, chart.range_y);
+					
+					// Apply cached image
+					// ctx.drawImage(chart.cached, 0, 0);
+					
 					const sizeMin = 0.01, sizeMax = 20, alphaMin = 0, alphaMax = 1;
-					this.julianDayHistory.forEach((jd, index) => {
+					
+					
+					// this.julianDayHistory.forEach((jd, index) => {
+					const jd = this.julianDay;
+					
+					
 						const scl = index / this.julianDayHistory.length;
 						const size = sizeMin + scl * (sizeMax - sizeMin);
 						const alpha = alphaMin + scl * (alphaMax - alphaMin);
@@ -175,9 +223,10 @@
 						
 						ctx.fillStyle = `rgba(${255 - col}, 0, ${col}, ${alpha})`;
 						this.drawJulianDay(jd, index, chart, canvasId, size);
-					});
+					// });
 				});
 				
+				this.isDrawing -= 1;
 			}
 		},
 		
@@ -191,332 +240,120 @@
 				this.lastUpdated = (new Date()).toString();
 				console.group('Drawing charts at ' + this.lastUpdated);
 				
-				this.charts.forEach((chart, index) => {
-					this.drawChart(chart, 'canvas_' + chart.y + '__' + index);
+				this.charts_processed.forEach((chart) => {
+					this.isDrawing += 1;
+					
+					chart.drawer.clearCanvas();
+					chart.drawer.drawAxes();
+					chart.drawer.drawAxisLabels();
+					
+					const alphaStart = 0.1;
+					const alphaEnd = 1;
+					const alphaDelta = (alphaEnd - alphaStart) / chart.drawer.x_values.length;
+					const colorDelta = 255 / chart.drawer.x_values.length;
+					chart.drawer.plotAllPoints(
+						10,
+						// Colors: red to green
+						(index) => `rgba(${255 - (index * colorDelta)}, ${index * colorDelta}, 0, ${alphaStart + (index * alphaDelta)})`
+					);
+					
+					this.isDrawing -= 1;
 				});
 				
 				console.groupEnd();
 			},
 			
-			// draw a fresh chart
-			drawChart(chart, canvasId = null) {
-				canvasId = canvasId || 'canvas_' + chart.y;
-				const canvas = this.$refs[canvasId];
-				const ctx = canvas.getContext('2d');
-				
-				ctx.restore();
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				ctx.fillStyle = 'white';
-				ctx.fillRect(0, 0, canvas.width, canvas.height);
-				
-				// Abstracted into a different method so i can easily graph from different slugs
-				this.drawValuesOnChart(chart, canvasId, chart.x, chart.y);
-			},
-			
-			drawJulianDay(JD, index, chart, canvasId, size = 20) {
-				if (! chart.cached) {
-					console.log('no cached chart');
-					return;
-				}
-				
-				const t = JD - this.julianDayStart; // in days since the start
-				
-				this.o.JD = JD;
-				
-				let x = -1, y = -1;
-				
-				if (chart.x === 'time') {
-					x = t;
-				} else {
-					let val = this.o;
-					const slugParts = chart.x.split('.'); // Account for, say, "heliocentric.x"
-					for (let i = 0; i < slugParts.length; i++) {
-						val = val[slugParts[i]];
-					}
-					x = val;
-				}
-				
-				if (chart.y === 'time') {
-					y = t;
-				} else {
-					let val = this.o;
-					const slugParts = chart.y.split('.'); // Account for, say, "heliocentric.y"
-					for (let i = 0; i < slugParts.length; i++) {
-						val = val[slugParts[i]];
-					}
-					y = val;
-				}
-				
-				const canvas = this.$refs[canvasId];
-				const ctx = canvas.getContext('2d');
-				
-				if (! chart.REAL_TO_CANVAS || ! chart.range_x || ! chart.range_y) {
-					const { x_values, y_values } = this.extractCoordinates(
-						this.julianDayStart,
-						this.julianDayEnd,
-						this.julianDayStep,
-						chart.x,
-						chart.y
-					);
-					const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
-					const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
-					
-					chart.REAL_TO_CANVAS = REAL_TO_CANVAS;
-					chart.range_x = range_x;
-					chart.range_y = range_y;
-				}
-				
-				this.prepCanvasForGraphing(ctx, canvas, chart.range_x, chart.REAL_TO_CANVAS, chart.range_y);
-				
-				// Apply cached image
-				ctx.drawImage(chart.cached, 0, 0);
-				
-				this.plotPoint(x, chart.REAL_TO_CANVAS, y, ctx, size);
-				
-				ctx.restore();
-			},
+
+			// drawJulianDay(JD, index, chart, canvasId, size = 20) {
+			// 	if (this.isDrawing > 0) {
+			// 		console.log('not drawing julian day cause charts are not done drawing');
+			// 		return;
+			// 	}
+			//
+			// 	if (! chart.cached) {
+			// 		console.log('no cached chart');
+			// 		return;
+			// 	}
+			//
+			// 	const t = JD - this.julianDayStart; // in days since the start
+			//
+			// 	this.o.JD = JD;
+			//
+			// 	let x = -1, y = -1;
+			//
+			// 	if (chart.x === 'time') {
+			// 		x = t;
+			// 	} else {
+			// 		let val = this.o;
+			// 		const slugParts = chart.x.split('.'); // Account for, say, "heliocentric.x"
+			// 		for (let i = 0; i < slugParts.length; i++) {
+			// 			val = val[slugParts[i]];
+			// 		}
+			// 		x = val;
+			// 	}
+			//
+			// 	if (chart.y === 'time') {
+			// 		y = t;
+			// 	} else {
+			// 		let val = this.o;
+			// 		const slugParts = chart.y.split('.'); // Account for, say, "heliocentric.y"
+			// 		for (let i = 0; i < slugParts.length; i++) {
+			// 			val = val[slugParts[i]];
+			// 		}
+			// 		y = val;
+			// 	}
+			//
+			// 	const canvas = this.$refs[canvasId];
+			// 	const ctx = canvas.getContext('2d');
+			//
+			// 	this.plotPoint(x, chart.REAL_TO_CANVAS, y, ctx, size);
+			// },
 			
 			extractCoordinates(jdStart, jdEnd, jdStep, xSlug ='', ySlug = '') {
 				// Calculate all the points
 				const x_values = [];
 				const y_values = [];
+				const jd_values = {};
 				for (let JD = this.julianDayStart; JD <= this.julianDayEnd; JD += this.julianDayStep) {
 					const t = JD - this.julianDayStart; // in days since the start
 					this.o.JD = JD;
 					
+					let newX = -1;
+					let newY = -1;
+					
 					if (xSlug === 'time') {
-						x_values.push(t);
+						newX = t;
 					} else {
 						let val = this.o;
 						const slugParts = xSlug.split('.'); // Account for, say, "heliocentric.x"
 						for (let i = 0; i < slugParts.length; i++) {
 							val = val[slugParts[i]];
 						}
-						x_values.push(val);
+						newX = val;
 					}
 					
 					if (ySlug === 'time') {
-						y_values.push(t);
+						newY = t;
 					} else {
 						let val = this.o;
 						const slugParts = ySlug.split('.'); // Account for, say, "heliocentric.y"
 						for (let i = 0; i < slugParts.length; i++) {
 							val = val[slugParts[i]];
 						}
-						y_values.push(val);
+						newY = val;
 					}
+					
+					x_values.push(newX);
+					y_values.push(newY);
+					jd_values[JD] = {x: newX, y: newY};
+					
 				}
 				
 				return {
-					x_values, y_values
+					x_values,
+					y_values,
+					jd_values
 				}
-			},
-			
-			getRanges(x_values, y_values, chart) {
-				// Find the range for both
-				const range_x = {min: Math.min(...x_values), max: Math.max(...x_values), length: null};
-				range_x.length = range_x.max - range_x.min;
-				
-				const range_y = {min: Math.min(...y_values), max: Math.max(...y_values), length: null};
-				// for degrees-based stuff, i want to see between 0 and 360 in the y-axis.
-				if (chart.y.indexOf('_deg') !== -1) {
-					range_y.min = Math.min(range_y.min, 0);
-					range_y.max = Math.max(range_x.max, 360);
-				}
-				range_y.length = range_y.max - range_y.min;
-				
-				return {range_x, range_y};
-			},
-			
-			getCanvasConversions: function(canvas, range_x, range_y) {
-				const REAL_TO_CANVAS = {
-					x: canvas.width / range_x.length,
-					y: canvas.height / range_y.length,
-				};
-				const CANVAS_TO_REAL = {
-					x: range_x.length / canvas.width,
-					y: range_y.length / canvas.height,
-				};
-				
-				// Use these two when plotting stuff.
-				const range_x_canvas = {
-					min: range_x.min * REAL_TO_CANVAS.x,
-					max: range_x.max * REAL_TO_CANVAS.x,
-				};
-				const range_y_canvas = {
-					min: range_y.min * REAL_TO_CANVAS.y,
-					max: range_y.max * REAL_TO_CANVAS.y,
-				};
-				
-				const axes = {
-					x: {
-						start: {x: range_x_canvas.min, y: range_y_canvas.min},
-						end: {x: range_x_canvas.max, y: range_y_canvas.min},
-					},
-					y: {
-						start: {x: range_x_canvas.min, y: range_y_canvas.min},
-						end: {x: range_x_canvas.min, y: range_y_canvas.max},
-					},
-				};
-				
-				// Visualize the x- and y-axis if they should appear in the "middle" of the chart
-				if (range_x.min < 0 && range_x.max > 0) {
-					// y-axis should be vertically "centered"
-					axes.y.start.y = 0;
-					axes.y.end.y = 0;
-				}
-				if (range_y.min < 0 && range_y.max > 0) {
-					// x-axis should be horizontally "centered"
-					axes.x.start.y = 0;
-					axes.x.end.y = 0;
-				}
-				
-				return {REAL_TO_CANVAS, CANVAS_TO_REAL, axes};
-			},
-			
-			prepCanvasForGraphing: function(ctx, canvas, range_x, REAL_TO_CANVAS, range_y) {
-// Transform the canvas so the chart will show
-				ctx.save();
-				ctx.translate(0, canvas.height);
-				ctx.scale(1, - 1); // cartesian coords
-				ctx.translate(- 1 * range_x.min * REAL_TO_CANVAS.x, - 1 * range_y.min * REAL_TO_CANVAS.y);
-			},
-			
-			drawAxes: function(ctx, axes) {
-// Draw axes, which will reside behind the points
-				ctx.lineWidth = 10;
-				ctx.beginPath();
-				// x-axis:
-				ctx.moveTo(axes.x.start.x, axes.x.start.y);
-				ctx.lineTo(axes.x.end.x, axes.x.end.y);
-				// y-axis:
-				ctx.moveTo(axes.y.start.x, axes.y.start.y);
-				ctx.lineTo(axes.y.end.x, axes.y.end.y);
-				ctx.stroke();
-			},
-			
-			plotPoint: function(x_real, REAL_TO_CANVAS, y_real, ctx, radius = 10) {
-				const x_canvas = x_real * REAL_TO_CANVAS.x;
-				const y_canvas = y_real * REAL_TO_CANVAS.y;
-				
-				/*
-				// one pixel
-				ctx.fillRect(x_canvas, y_canvas, size, size);
-				*/
-				
-				// Small circle
-				ctx.beginPath();
-				ctx.arc(x_canvas, y_canvas, radius, 0, 2 * Math.PI, false);
-				ctx.fill();
-			},
-			
-			onFinishedDrawingPoints: function(ctx, range_x, range_y, canvas) {
-// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
-				ctx.restore(); // from [cartesian], scale, and translate
-				
-				// Draw axis extrema labels
-				ctx.fillStyle = 'purple';
-				ctx.font = '50px serif';
-				
-				ctx.textAlign = 'left';
-				ctx.textBaseline = 'bottom';
-				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.min)})`, 0, canvas.height); // bottom left
-				ctx.textAlign = 'left';
-				ctx.textBaseline = 'top';
-				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.max)})`, 0, 0); // top left
-				ctx.textAlign = 'right';
-				ctx.textBaseline = 'top';
-				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.max)})`, canvas.width, 0); // top right
-				ctx.textAlign = 'right';
-				ctx.textBaseline = 'bottom';
-				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.min)})`, canvas.width, canvas.height); // bottom right
-				
-				
-				// debug text. TODO: delete
-				// ctx.font = '60px monospace';
-				// ctx.textAlign = 'center';
-				// ctx.textBaseline = 'bottom';
-				// ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
-				// ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
-				
-				
-				// debug - draw a square in the top left, to ensure i know that things are actually working.
-				ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
-				ctx.fillRect(50, 50, 50, 50); // TODO delete
-				
-				this.isDrawing -= 1;
-			},
-			
-			// draw on a chart that potentially already has stuff on it
-			drawValuesOnChart(chart, canvasId, xSlug = 'time', ySlug) {
-				this.isDrawing += 1;
-				
-				const canvas = this.$refs[canvasId];
-				const ctx = canvas.getContext('2d');
-				
-				const { x_values, y_values } = this.extractCoordinates(
-					this.julianDayStart,
-					this.julianDayEnd,
-					this.julianDayStep,
-					xSlug,
-					ySlug
-				);
-				
-				const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
-				
-				// Coordinate transformations. For some reason the "FOO_TO_BAR" is easier for me to use than "BAR_PER_FOO" -- i always mix up the latter.
-				const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
-				
-				chart.REAL_TO_CANVAS = REAL_TO_CANVAS; // need this for julian day drawing
-				chart.range_x = range_x; // need this for julian day drawing
-				chart.range_y = range_y; // need this for julian day drawing
-				
-				// Apply transforms as needed
-				this.prepCanvasForGraphing(ctx, canvas, range_x, REAL_TO_CANVAS, range_y);
-				
-				this.drawAxes(ctx, axes);
-				
-				// Plot the points
-				ctx.fillStyle = 'red';
-				
-				const alphaStart = 0.1;
-				const alphaEnd = 1;
-				const alphaDelta = (alphaEnd - alphaStart) / x_values.length;
-				const colorDelta = 255 / x_values.length;
-				
-				for (let i = 0; i < x_values.length; i++) {
-					// ctx.globalAlpha = alphaStart + (i * alphaDelta); // "fade in" and from red to green as time goes on
-					// setTimeout(() => {
-					const xx = x_values[i];
-					const yy = y_values[i];
-					setTimeout(() => {
-						ctx.fillStyle = `rgba(${255 - (i * colorDelta)}, ${i * colorDelta}, 0, ${alphaStart + (i * alphaDelta)})`;
-						this.plotPoint(xx, REAL_TO_CANVAS, yy, ctx);
-						
-						if (i >= x_values.length - 1) {
-							// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
-							this.onFinishedDrawingPoints(ctx, range_x, range_y, canvas, chart, canvasId);
-							
-							// Cache the canvas so we can draw on it and 'preapply' the orig
-							// TODO 2021-07-11: might be nice to do this without axes (or something) and then be able to draw different axes or labels on it as needed. maybe. as i type it, i'm less jazzed about it.
-							
-							if (! chart.cached) {
-								chart.cached = this.$refs[canvasId + '__cached'];
-							}
-							const ctx__cached = chart.cached.getContext('2d');
-							ctx__cached.drawImage(canvas, 0, 0);
-						}
-					}, 2 * i);
-				}
-				console.log({xSlug, ySlug, x_values, y_values}); // TODO delete eventually
-				
-				console.log({ // TODO delete
-					canvas,
-					range_x,
-					range_y,
-					REAL_TO_CANVAS,
-					CANVAS_TO_REAL,
-				});
 			},
 		},
 		
