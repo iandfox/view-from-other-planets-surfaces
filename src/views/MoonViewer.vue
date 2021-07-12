@@ -12,7 +12,7 @@
 	<h2>Coords</h2>
 	<MoonCoords></MoonCoords>
 	<h2>Params</h2>
-	<MoonParams></MoonParams>
+	<!--<MoonParams></MoonParams>-->
 </template>
 
 <script>

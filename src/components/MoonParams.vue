@@ -10,6 +10,7 @@
 
 <template>
 	<ChartsViewer
+		name="Moon Params"
 		:charts="charts"
 		:class-instance="moon"
 		:julian-day-start="2459404.5"

@@ -4,6 +4,7 @@
  -     
  -     Example usage:
  -         <ChartsViewer
+ -             :name="Foo"
  -             :charts="charts"
  -             :class-instance="new foo()" ((but probably declare a new foo() in `data` ofc)
  -             julian-day-start="12345"
@@ -15,10 +16,33 @@
 -->
 
 <template>
-	<div class="floating">
-		<button @click="draw">Draw again</button>
-	</div>
+	<teleport to="#floating-controls">
+		<button @click="draw" :disabled="isDrawing">
+			<span v-if="isDrawing">{{name}} has {{isDrawing}} drawings in progress...</span>
+			<span v-else>Draw {{name}} Again</span>
+		</button>
+		<br>
+		<div class="range-wrapper">
+			<label>Julian Day: {{}}</label>
+			<input
+				type="range"
+				v-model="julianDay"
+				:min="julianDayStart"
+				:max="julianDayEnd"
+				:step="julianDayStep"
+			/>
+			<span class="min">+{{numberFormat.format(0)}} days</span>
+			<span class="max">+{{numberFormat.format(julianDayEnd - julianDayStart)}} days</span>
+			<span class="value">
+				{{numberFormat.format(julianDay)}}
+				<br>
+				<small><code>[+{{numberFormat.format(julianDay - julianDayStart)}} :: {{numberFormat.format(Math.floor(julianDay - julianDayStart))}} day and {{numberFormat.format(((julianDay - julianDayStart) % 1) * 24)}} hours]</code></small>
+			</span>
+		</div>
+	</teleport>
 	
+	
+	<h3>{{name}}</h3>
 	<p><small>
 		<div style="display: grid;">
 			<strong>Last Update:</strong>&nbsp;
@@ -30,13 +54,20 @@
 		</div>
 	</small></p>
 	<div class="grid">
-		<div class="graph" v-for="chart in charts">
+		<div class="graph" v-for="(chart, index) in charts">
 			<div class="title"><small><code>({{chart.x === 'time' ? 't' : chart.x}}, {{chart.y}})</code></small> - {{chart.title}}</div>
 			<canvas
-				:id="'canvas_' + chart.y"
+				:id="'canvas_' + chart.y + '__' + index"
 				width="1366"
 				height="768"
-				:ref="'canvas_' + chart.y"
+				:ref="'canvas_' + chart.y + '__' + index"
+			></canvas>
+			<canvas
+				class="cached"
+				:id="'canvas_' + chart.y + '__' + index + '__cached'"
+				width="1366"
+				height="768"
+				:ref="'canvas_' + chart.y + '__' + index + '__cached'"
 			></canvas>
 			<details v-if="chart.description">
 				<summary><small>Description</small></summary>
@@ -52,6 +83,7 @@
 		name: 'ChartsViewer',
 		components: {Timer},
 		props: {
+			name: String,
 			charts: {
 				type: Array,
 				required: false,
@@ -79,11 +111,15 @@
 				type: Number,
 				required: false,
 				default: 1 / 24,
-			}
+			},
 		},
 		
 		data() {
 			return {
+				julianDay: null,
+				
+				isDrawing: 0,
+				
 				lastUpdatedEpoch: Date.now(),
 				lastUpdated: '',
 				
@@ -98,6 +134,8 @@
 		},
 		
 		mounted() {
+			this.julianDay = this.julianDayStart;
+			
 			this.draw();
 		},
 		
@@ -110,30 +148,41 @@
 		
 		methods: {
 			draw() {
+				if (this.isDrawing > 0) {
+					console.log('tried to draw while drawing was in progress, aborting.');
+					return;
+				}
+				
 				this.lastUpdated = (new Date()).toString();
 				console.group('Drawing charts at ' + this.lastUpdated);
 				
-				this.charts.forEach((chart) => {
-					this.drawChart(chart);
+				this.charts.forEach((chart, index) => {
+					this.drawChart(chart, 'canvas_' + chart.y + '__' + index);
 				});
 				
 				console.groupEnd();
 			},
 			
 			// draw a fresh chart
-			drawChart(chart) {
-				const canvas = this.$refs['canvas_' + chart.y];
+			drawChart(chart, canvasId = null) {
+				canvasId = canvasId || 'canvas_' + chart.y;
+				const canvas = this.$refs[canvasId];
 				const ctx = canvas.getContext('2d');
 				
+				ctx.restore(); ctx.restore(); ctx.restore(); ctx.restore(); ctx.restore();
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.fillStyle = 'white';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				
 				// Abstracted into a different method so i can easily graph from different slugs
-				this.drawValuesOnChart(chart, chart.x, chart.y);
+				this.drawValuesOnChart(chart, canvasId, chart.x, chart.y);
 			},
 			
 			// draw on a chart that potentially already has stuff on it
-			drawValuesOnChart(chart, xSlug = 'time', ySlug) {
-				const canvas = this.$refs['canvas_' + chart.y];
+			drawValuesOnChart(chart, canvasId, xSlug = 'time', ySlug) {
+				this.isDrawing += 1;
+				
+				const canvas = this.$refs[canvasId];
 				const ctx = canvas.getContext('2d');
 				
 				// Calculate all the points
@@ -266,7 +315,7 @@
 					// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
 					ctx.restore(); // from [cartesian], scale, and translate
 					
-					// Draw axis labels in "dumb"/obvious places.
+					// Draw axis extrema labels
 					ctx.fillStyle = 'purple';
 					ctx.font = '50px serif';
 					
@@ -283,16 +332,28 @@
 					
 					// debug text. TODO: delete
 					// ctx.font = '60px monospace';
-					ctx.textAlign = 'center';
-					ctx.textBaseline = 'bottom';
-					ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
-					ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
+					// ctx.textAlign = 'center';
+					// ctx.textBaseline = 'bottom';
+					// ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
+					// ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
 					
 					
 					
 					// debug - draw a square in the top left, to ensure i know that things are actually working.
 					ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
 					ctx.fillRect(50, 50, 50, 50); // TODO delete
+					
+					
+					// Cache the canvas so we can draw on it,
+					// TODO 2021-07-11: might be nice to do this without axes (or something) and then be able to draw different axes or labels on it as needed. maybe. as i type it, i'm less jazzed about it.
+					if (! chart.cached) {
+						chart.cached = this.$refs[canvasId + '__cached'];
+					}
+					const ctx__cached = chart.cached.getContext('2d');
+					ctx__cached.drawImage(canvas, 0, 0);
+					
+					
+					this.isDrawing -= 1;
 				};
 				
 				const alphaStart = 0.1;
@@ -359,12 +420,69 @@
 	}
 	
 	
-	.floating {
-		position: fixed;
-		top: 10px;
-		right: 10px;
-		background: rgba(255, 255, 255, 0.5);
-		padding: var(--length-medium);
-		border: solid 1px black;
+	
+	.cached {
+		outline: solid 2px greenyellow;
 	}
+	
+	
+	
+	/* range slider related styles TODO 2021-07-11: this is a great idea for a generic/util component, i should turn it into one. Well... not me. You. Yes, you, Future Ian. :wave: */
+	.range-wrapper {
+		font-size: 11px;
+		display: grid;
+		grid-template-areas:
+			" .  label  ."
+			"min input max"
+			" .   val   . "
+		;
+		grid-template-columns:
+			minmax(50px, fit-content) minmax(200px, 1fr) minmax(50px, fit-content);
+	}
+	.range-wrapper label {
+		font-weight: bold;
+		grid-area: label;
+		text-align: center;
+	}
+	.range-wrapper input[type="range"] {
+		grid-area: input;
+		
+	}
+	.range-wrapper .min {
+		grid-area: min;
+		text-align: right;
+	}
+	.range-wrapper .max {
+		grid-area: max;
+		text-align: left;
+	}
+	.range-wrapper .value {
+		grid-area: val;
+		text-align: center;
+		min-width: 200px;
+	}
+	/*
+	range-wrapper">
+	<label>Julian Day: {{}}</label>
+	                         <input
+	                         type="range"
+	v-model="julianDay"
+	:min="julianDayStart"
+	:max="julianDayEnd"
+	:step="julianDayStep"
+	/>
+	 <span class="min">{{julianDayStart}}</span>
+	                                       <span class="max">{{julianDayEnd}}</span>
+	                                                                           <span class="value">{{ju
+	
+	
+	*/
+	/*.floating {*/
+		/*position: fixed;*/
+		/*top: 10px;*/
+		/*right: 10px;*/
+		/*background: rgba(255, 255, 255, 0.5);*/
+		/*padding: var(--length-medium);*/
+		/*border: solid 1px black;*/
+	/*}*/
 </style>

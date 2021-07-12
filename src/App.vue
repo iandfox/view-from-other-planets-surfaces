@@ -7,6 +7,8 @@
 		<router-link to="/moon">Moon</router-link>
 	</div>
 	<router-view/>
+	
+	<div id="floating-controls"></div>
 </template>
 
 <style lang="less">
@@ -29,5 +31,17 @@
 				color: #42b983;
 			}
 		}
+	}
+	
+	#floating-controls {
+		z-index: 999;
+		transform: translate3d(0, 0, 0);
+		position: fixed;
+		top: var(--length-medium);
+		right: var(--length-medium);
+		padding: var(--length-small);
+		box-shadow: 0 0 5px 0 var(--color-accent);
+		
+		background: rgba(255, 255, 255, 0.75);
 	}
 </style>
