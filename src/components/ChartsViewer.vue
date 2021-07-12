@@ -36,7 +36,7 @@
 			<span class="value">
 				{{numberFormat.format(julianDay)}}
 				<br>
-				<small><code>[+{{numberFormat.format(julianDay - julianDayStart)}} :: {{numberFormat.format(Math.floor(julianDay - julianDayStart))}} day and {{numberFormat.format(((julianDay - julianDayStart) % 1) * 24)}} hours]</code></small>
+				<small><code>[+<span class="number__adhd-issues">{{numberFormat.format(julianDay - julianDayStart)}}</span> :: <span class="number__adhd-issues">{{numberFormat.format(Math.floor(julianDay - julianDayStart))}}</span> days and <span class="number__adhd-issues">{{numberFormat.format(((julianDay - julianDayStart) % 1) * 24)}}</span> hours]</code></small>
 			</span>
 		</div>
 	</teleport>
@@ -78,6 +78,7 @@
 </template>
 
 <script>
+	import { toRaw } from 'vue';
 	import Timer from './Timer';
 	export default {
 		name: 'ChartsViewer',
@@ -116,7 +117,10 @@
 		
 		data() {
 			return {
-				julianDay: null,
+				julianDay: 0,
+				
+				julianDayHistory: [],
+				maxJulianDayHistoryLength: 100,
 				
 				isDrawing: 0,
 				
@@ -146,6 +150,37 @@
 			},
 		},
 		
+		watch: {
+			julianDay() {
+				this.julianDayHistory.push(parseFloat(this.julianDay));
+				if (this.julianDayHistory.length > this.maxJulianDayHistoryLength) {
+					this.julianDayHistory.shift();
+				}
+				
+				this.charts.forEach((chart, index) => {
+					
+					const canvasId = 'canvas_' + chart.y + '__' + index;
+					const canvas = this.$refs[canvasId];
+					const ctx = canvas.getContext('2d');
+					if (chart.cached) {
+						ctx.drawImage(chart.cached, 0, 0);
+					}
+					
+					const sizeMin = 0.01, sizeMax = 20, alphaMin = 0, alphaMax = 1;
+					this.julianDayHistory.forEach((jd, index) => {
+						const scl = index / this.julianDayHistory.length;
+						const size = sizeMin + scl * (sizeMax - sizeMin);
+						const alpha = alphaMin + scl * (alphaMax - alphaMin);
+						const col = Math.floor(scl * 255);
+						
+						ctx.fillStyle = `rgba(${255 - col}, 0, ${col}, ${alpha})`;
+						this.drawJulianDay(jd, index, chart, canvasId, size);
+					});
+				});
+				
+			}
+		},
+		
 		methods: {
 			draw() {
 				if (this.isDrawing > 0) {
@@ -169,7 +204,7 @@
 				const canvas = this.$refs[canvasId];
 				const ctx = canvas.getContext('2d');
 				
-				ctx.restore(); ctx.restore(); ctx.restore(); ctx.restore(); ctx.restore();
+				ctx.restore();
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				ctx.fillStyle = 'white';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -178,13 +213,70 @@
 				this.drawValuesOnChart(chart, canvasId, chart.x, chart.y);
 			},
 			
-			// draw on a chart that potentially already has stuff on it
-			drawValuesOnChart(chart, canvasId, xSlug = 'time', ySlug) {
-				this.isDrawing += 1;
+			drawJulianDay(JD, index, chart, canvasId, size = 20) {
+				if (! chart.cached) {
+					console.log('no cached chart');
+					return;
+				}
+				
+				const t = JD - this.julianDayStart; // in days since the start
+				
+				this.o.JD = JD;
+				
+				let x = -1, y = -1;
+				
+				if (chart.x === 'time') {
+					x = t;
+				} else {
+					let val = this.o;
+					const slugParts = chart.x.split('.'); // Account for, say, "heliocentric.x"
+					for (let i = 0; i < slugParts.length; i++) {
+						val = val[slugParts[i]];
+					}
+					x = val;
+				}
+				
+				if (chart.y === 'time') {
+					y = t;
+				} else {
+					let val = this.o;
+					const slugParts = chart.y.split('.'); // Account for, say, "heliocentric.y"
+					for (let i = 0; i < slugParts.length; i++) {
+						val = val[slugParts[i]];
+					}
+					y = val;
+				}
 				
 				const canvas = this.$refs[canvasId];
 				const ctx = canvas.getContext('2d');
 				
+				if (! chart.REAL_TO_CANVAS || ! chart.range_x || ! chart.range_y) {
+					const { x_values, y_values } = this.extractCoordinates(
+						this.julianDayStart,
+						this.julianDayEnd,
+						this.julianDayStep,
+						chart.x,
+						chart.y
+					);
+					const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
+					const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
+					
+					chart.REAL_TO_CANVAS = REAL_TO_CANVAS;
+					chart.range_x = range_x;
+					chart.range_y = range_y;
+				}
+				
+				this.prepCanvasForGraphing(ctx, canvas, chart.range_x, chart.REAL_TO_CANVAS, chart.range_y);
+				
+				// Apply cached image
+				ctx.drawImage(chart.cached, 0, 0);
+				
+				this.plotPoint(x, chart.REAL_TO_CANVAS, y, ctx, size);
+				
+				ctx.restore();
+			},
+			
+			extractCoordinates(jdStart, jdEnd, jdStep, xSlug ='', ySlug = '') {
 				// Calculate all the points
 				const x_values = [];
 				const y_values = [];
@@ -215,6 +307,12 @@
 					}
 				}
 				
+				return {
+					x_values, y_values
+				}
+			},
+			
+			getRanges(x_values, y_values, chart) {
 				// Find the range for both
 				const range_x = {min: Math.min(...x_values), max: Math.max(...x_values), length: null};
 				range_x.length = range_x.max - range_x.min;
@@ -227,11 +325,10 @@
 				}
 				range_y.length = range_y.max - range_y.min;
 				
-				// Massage the ranges, in case they're too small
-				// if (range_x.length < 0.1) { range_x.min *= 0.9; range_x.max *= 1.1; range_x.length = range_x.max - range_x.min; }
-				// if (range_y.length < 0.1) { range_y.min *= 0.9; range_y.max *= 1.1; range_y.length = range_y.max - range_y.min; }
-				
-				// Coordinate transformations. For some reason the "FOO_TO_BAR" is easier for me to use than "BAR_PER_FOO" -- i always mix up the latter.
+				return {range_x, range_y};
+			},
+			
+			getCanvasConversions: function(canvas, range_x, range_y) {
 				const REAL_TO_CANVAS = {
 					x: canvas.width / range_x.length,
 					y: canvas.height / range_y.length,
@@ -274,13 +371,19 @@
 					axes.x.end.y = 0;
 				}
 				
-				// Transform the canvas so the chart will show
+				return {REAL_TO_CANVAS, CANVAS_TO_REAL, axes};
+			},
+			
+			prepCanvasForGraphing: function(ctx, canvas, range_x, REAL_TO_CANVAS, range_y) {
+// Transform the canvas so the chart will show
 				ctx.save();
-				ctx.translate(0, canvas.height); ctx.scale(1,-1); // cartesian coords
-				ctx.translate(-1 * range_x.min * REAL_TO_CANVAS.x, -1 * range_y.min * REAL_TO_CANVAS.y);
-				
-				
-				// Draw axes, which will reside behind the points
+				ctx.translate(0, canvas.height);
+				ctx.scale(1, - 1); // cartesian coords
+				ctx.translate(- 1 * range_x.min * REAL_TO_CANVAS.x, - 1 * range_y.min * REAL_TO_CANVAS.y);
+			},
+			
+			drawAxes: function(ctx, axes) {
+// Draw axes, which will reside behind the points
 				ctx.lineWidth = 10;
 				ctx.beginPath();
 				// x-axis:
@@ -290,71 +393,91 @@
 				ctx.moveTo(axes.y.start.x, axes.y.start.y);
 				ctx.lineTo(axes.y.end.x, axes.y.end.y);
 				ctx.stroke();
+			},
+			
+			plotPoint: function(x_real, REAL_TO_CANVAS, y_real, ctx, radius = 10) {
+				const x_canvas = x_real * REAL_TO_CANVAS.x;
+				const y_canvas = y_real * REAL_TO_CANVAS.y;
+				
+				/*
+				// one pixel
+				ctx.fillRect(x_canvas, y_canvas, size, size);
+				*/
+				
+				// Small circle
+				ctx.beginPath();
+				ctx.arc(x_canvas, y_canvas, radius, 0, 2 * Math.PI, false);
+				ctx.fill();
+			},
+			
+			onFinishedDrawingPoints: function(ctx, range_x, range_y, canvas) {
+// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
+				ctx.restore(); // from [cartesian], scale, and translate
+				
+				// Draw axis extrema labels
+				ctx.fillStyle = 'purple';
+				ctx.font = '50px serif';
+				
+				ctx.textAlign = 'left';
+				ctx.textBaseline = 'bottom';
+				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.min)})`, 0, canvas.height); // bottom left
+				ctx.textAlign = 'left';
+				ctx.textBaseline = 'top';
+				ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.max)})`, 0, 0); // top left
+				ctx.textAlign = 'right';
+				ctx.textBaseline = 'top';
+				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.max)})`, canvas.width, 0); // top right
+				ctx.textAlign = 'right';
+				ctx.textBaseline = 'bottom';
+				ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.min)})`, canvas.width, canvas.height); // bottom right
+				
+				
+				// debug text. TODO: delete
+				// ctx.font = '60px monospace';
+				// ctx.textAlign = 'center';
+				// ctx.textBaseline = 'bottom';
+				// ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
+				// ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
+				
+				
+				// debug - draw a square in the top left, to ensure i know that things are actually working.
+				ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
+				ctx.fillRect(50, 50, 50, 50); // TODO delete
+				
+				this.isDrawing -= 1;
+			},
+			
+			// draw on a chart that potentially already has stuff on it
+			drawValuesOnChart(chart, canvasId, xSlug = 'time', ySlug) {
+				this.isDrawing += 1;
+				
+				const canvas = this.$refs[canvasId];
+				const ctx = canvas.getContext('2d');
+				
+				const { x_values, y_values } = this.extractCoordinates(
+					this.julianDayStart,
+					this.julianDayEnd,
+					this.julianDayStep,
+					xSlug,
+					ySlug
+				);
+				
+				const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
+				
+				// Coordinate transformations. For some reason the "FOO_TO_BAR" is easier for me to use than "BAR_PER_FOO" -- i always mix up the latter.
+				const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
+				
+				chart.REAL_TO_CANVAS = REAL_TO_CANVAS; // need this for julian day drawing
+				chart.range_x = range_x; // need this for julian day drawing
+				chart.range_y = range_y; // need this for julian day drawing
+				
+				// Apply transforms as needed
+				this.prepCanvasForGraphing(ctx, canvas, range_x, REAL_TO_CANVAS, range_y);
+				
+				this.drawAxes(ctx, axes);
 				
 				// Plot the points
-				const plotPoint = (x_real, y_real) => {
-					const x_canvas = x_real * REAL_TO_CANVAS.x;
-					const y_canvas = y_real * REAL_TO_CANVAS.y;
-					
-					/*
-					// one pixel
-					ctx.fillRect(x_canvas, y_canvas, size, size);
-					*/
-					
-					// Small circle
-					ctx.beginPath();
-					const circleRadius = 20;
-					ctx.arc(x_canvas, y_canvas, circleRadius, 0, 2 * Math.PI, false);
-					ctx.fill();
-				};
-				
 				ctx.fillStyle = 'red';
-				
-				
-				const finishedDrawingPoints = () => {
-					// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
-					ctx.restore(); // from [cartesian], scale, and translate
-					
-					// Draw axis extrema labels
-					ctx.fillStyle = 'purple';
-					ctx.font = '50px serif';
-					
-					ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-					ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.min)})`, 0, canvas.height); // bottom left
-					ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-					ctx.fillText(`(${this.numberFormat.format(range_x.min)}, ${this.numberFormat.format(range_y.max)})`, 0, 0); // top left
-					ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-					ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.max)})`, canvas.width, 0); // top right
-					ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-					ctx.fillText(`(${this.numberFormat.format(range_x.max)}, ${this.numberFormat.format(range_y.min)})`, canvas.width, canvas.height); // bottom right
-					
-					
-					
-					// debug text. TODO: delete
-					// ctx.font = '60px monospace';
-					// ctx.textAlign = 'center';
-					// ctx.textBaseline = 'bottom';
-					// ctx.fillText(JSON.stringify(range_x), canvas.width / 2, canvas.height / 2);
-					// ctx.fillText(JSON.stringify(range_y), canvas.width / 2, canvas.height / 2 + 35);
-					
-					
-					
-					// debug - draw a square in the top left, to ensure i know that things are actually working.
-					ctx.fillStyle = `rgba(0, 0, 255, ${Math.random()})`; // TODO delete
-					ctx.fillRect(50, 50, 50, 50); // TODO delete
-					
-					
-					// Cache the canvas so we can draw on it,
-					// TODO 2021-07-11: might be nice to do this without axes (or something) and then be able to draw different axes or labels on it as needed. maybe. as i type it, i'm less jazzed about it.
-					if (! chart.cached) {
-						chart.cached = this.$refs[canvasId + '__cached'];
-					}
-					const ctx__cached = chart.cached.getContext('2d');
-					ctx__cached.drawImage(canvas, 0, 0);
-					
-					
-					this.isDrawing -= 1;
-				};
 				
 				const alphaStart = 0.1;
 				const alphaEnd = 1;
@@ -368,13 +491,22 @@
 					const yy = y_values[i];
 					setTimeout(() => {
 						ctx.fillStyle = `rgba(${255 - (i * colorDelta)}, ${i * colorDelta}, 0, ${alphaStart + (i * alphaDelta)})`;
-						plotPoint(xx, yy);
+						this.plotPoint(xx, REAL_TO_CANVAS, yy, ctx);
 						
 						if (i >= x_values.length - 1) {
 							// Gotta do this after everything else has been plotted, or else it restores the ctx before the points can be drawn
-							finishedDrawingPoints();
+							this.onFinishedDrawingPoints(ctx, range_x, range_y, canvas, chart, canvasId);
+							
+							// Cache the canvas so we can draw on it and 'preapply' the orig
+							// TODO 2021-07-11: might be nice to do this without axes (or something) and then be able to draw different axes or labels on it as needed. maybe. as i type it, i'm less jazzed about it.
+							
+							if (! chart.cached) {
+								chart.cached = this.$refs[canvasId + '__cached'];
+							}
+							const ctx__cached = chart.cached.getContext('2d');
+							ctx__cached.drawImage(canvas, 0, 0);
 						}
-					}, 5 * i);
+					}, 2 * i);
 				}
 				console.log({xSlug, ySlug, x_values, y_values}); // TODO delete eventually
 				
@@ -420,13 +552,6 @@
 	}
 	
 	
-	
-	.cached {
-		outline: solid 2px greenyellow;
-	}
-	
-	
-	
 	/* range slider related styles TODO 2021-07-11: this is a great idea for a generic/util component, i should turn it into one. Well... not me. You. Yes, you, Future Ian. :wave: */
 	.range-wrapper {
 		font-size: 11px;
@@ -459,7 +584,19 @@
 	.range-wrapper .value {
 		grid-area: val;
 		text-align: center;
-		min-width: 200px;
+		min-width: 220px
+	}
+	.range-wrapper .value small code {
+		display: inline-block;
+	}
+	.range-wrapper .value small code span {
+		display: inline-block;
+		min-width: 5ch;
+		text-align: right;
+	}
+	
+	.cached {
+		display: none;
 	}
 	/*
 	range-wrapper">
