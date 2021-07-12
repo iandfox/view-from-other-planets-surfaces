@@ -26,7 +26,7 @@
 			<label>Julian Day: {{}}</label>
 			<input
 				type="range"
-				v-model="julianDay"
+				v-model.number="julianDay"
 				:min="julianDayStart"
 				:max="julianDayEnd"
 				:step="julianDayStep"
@@ -61,13 +61,6 @@
 				width="1366"
 				height="768"
 				:ref="'canvas_' + chart.y + '__' + index"
-			></canvas>
-			<canvas
-				class="cached"
-				:id="'canvas_' + chart.y + '__' + index + '__cached'"
-				width="1366"
-				height="768"
-				:ref="'canvas_' + chart.y + '__' + index + '__cached'"
 			></canvas>
 			<details v-if="chart.description">
 				<summary><small>Description</small></summary>
@@ -168,65 +161,28 @@
 		
 		watch: {
 			julianDay() {
-				this.julianDayHistory.push(parseFloat(this.julianDay));
-				if (this.julianDayHistory.length > this.maxJulianDayHistoryLength) {
-					this.julianDayHistory.shift();
-				}
+				// TODO 2021-07-12: track history.
+				// this.charts.forEach((chart) => {
+				// 	chart.jdHistory.push(this.julianDay);
+				// 	if (chart.jdHistory.length > this.maxJulianDayHistoryLength) {
+				// 		chart.jdHistory.shift();
+				// 	}
+				// });
 				
 				if (this.isDrawing > 0) {
 					return;
 				}
 				
-				this.isDrawing += 1;
-				
-				this.charts.forEach((chart, index) => {
-					if (! chart.cached) {
-						return;
-					}
-					
-					const canvasId = 'canvas_' + chart.y + '__' + index;
-					const canvas = this.$refs[canvasId];
-					const ctx = canvas.getContext('2d');
-					
-					if (! chart.REAL_TO_CANVAS || ! chart.range_x || ! chart.range_y) {
-						const { x_values, y_values } = this.extractCoordinates(
-							this.julianDayStart,
-							this.julianDayEnd,
-							this.julianDayStep,
-							chart.x,
-							chart.y
-						);
-						const { range_x, range_y } = this.getRanges(x_values, y_values, chart);
-						const {REAL_TO_CANVAS, CANVAS_TO_REAL, axes} = this.getCanvasConversions(canvas, range_x, range_y);
-						
-						chart.REAL_TO_CANVAS = REAL_TO_CANVAS;
-						chart.range_x = range_x;
-						chart.range_y = range_y;
-					}
-					
-					this.prepCanvasForGraphing(ctx, canvas, chart.range_x, chart.REAL_TO_CANVAS, chart.range_y);
-					
-					// Apply cached image
-					// ctx.drawImage(chart.cached, 0, 0);
-					
-					const sizeMin = 0.01, sizeMax = 20, alphaMin = 0, alphaMax = 1;
-					
-					
-					// this.julianDayHistory.forEach((jd, index) => {
-					const jd = this.julianDay;
-					
-					
-						const scl = index / this.julianDayHistory.length;
-						const size = sizeMin + scl * (sizeMax - sizeMin);
-						const alpha = alphaMin + scl * (alphaMax - alphaMin);
-						const col = Math.floor(scl * 255);
-						
-						ctx.fillStyle = `rgba(${255 - col}, 0, ${col}, ${alpha})`;
-						this.drawJulianDay(jd, index, chart, canvasId, size);
-					// });
+				// Delaying the drawing to the next animation frame improves FPS somewhat
+				requestAnimationFrame(() => {
+					// Draw current point. much less complex than the jdHistory and likely good enough for my current debug.
+					this.charts.forEach((chart) => {
+						const {x, y} = chart.drawer.getClosestJDCoords(this.julianDay);
+						chart.drawer.ctx.fillStyle = 'purple';
+						chart.drawer.plotPoint(x, y);
+						// TODO 2021-07-12: draw history.
+					});
 				});
-				
-				this.isDrawing -= 1;
 			}
 		},
 		
@@ -263,57 +219,11 @@
 				console.groupEnd();
 			},
 			
-
-			// drawJulianDay(JD, index, chart, canvasId, size = 20) {
-			// 	if (this.isDrawing > 0) {
-			// 		console.log('not drawing julian day cause charts are not done drawing');
-			// 		return;
-			// 	}
-			//
-			// 	if (! chart.cached) {
-			// 		console.log('no cached chart');
-			// 		return;
-			// 	}
-			//
-			// 	const t = JD - this.julianDayStart; // in days since the start
-			//
-			// 	this.o.JD = JD;
-			//
-			// 	let x = -1, y = -1;
-			//
-			// 	if (chart.x === 'time') {
-			// 		x = t;
-			// 	} else {
-			// 		let val = this.o;
-			// 		const slugParts = chart.x.split('.'); // Account for, say, "heliocentric.x"
-			// 		for (let i = 0; i < slugParts.length; i++) {
-			// 			val = val[slugParts[i]];
-			// 		}
-			// 		x = val;
-			// 	}
-			//
-			// 	if (chart.y === 'time') {
-			// 		y = t;
-			// 	} else {
-			// 		let val = this.o;
-			// 		const slugParts = chart.y.split('.'); // Account for, say, "heliocentric.y"
-			// 		for (let i = 0; i < slugParts.length; i++) {
-			// 			val = val[slugParts[i]];
-			// 		}
-			// 		y = val;
-			// 	}
-			//
-			// 	const canvas = this.$refs[canvasId];
-			// 	const ctx = canvas.getContext('2d');
-			//
-			// 	this.plotPoint(x, chart.REAL_TO_CANVAS, y, ctx, size);
-			// },
-			
 			extractCoordinates(jdStart, jdEnd, jdStep, xSlug ='', ySlug = '') {
 				// Calculate all the points
 				const x_values = [];
 				const y_values = [];
-				const jd_values = {};
+				const jd_values = [];
 				for (let JD = this.julianDayStart; JD <= this.julianDayEnd; JD += this.julianDayStep) {
 					const t = JD - this.julianDayStart; // in days since the start
 					this.o.JD = JD;
@@ -345,7 +255,7 @@
 					
 					x_values.push(newX);
 					y_values.push(newY);
-					jd_values[JD] = {x: newX, y: newY};
+					jd_values.push({JD, x: newX, y: newY});
 					
 				}
 				
@@ -431,32 +341,4 @@
 		min-width: 5ch;
 		text-align: right;
 	}
-	
-	.cached {
-		display: none;
-	}
-	/*
-	range-wrapper">
-	<label>Julian Day: {{}}</label>
-	                         <input
-	                         type="range"
-	v-model="julianDay"
-	:min="julianDayStart"
-	:max="julianDayEnd"
-	:step="julianDayStep"
-	/>
-	 <span class="min">{{julianDayStart}}</span>
-	                                       <span class="max">{{julianDayEnd}}</span>
-	                                                                           <span class="value">{{ju
-	
-	
-	*/
-	/*.floating {*/
-		/*position: fixed;*/
-		/*top: 10px;*/
-		/*right: 10px;*/
-		/*background: rgba(255, 255, 255, 0.5);*/
-		/*padding: var(--length-medium);*/
-		/*border: solid 1px black;*/
-	/*}*/
 </style>

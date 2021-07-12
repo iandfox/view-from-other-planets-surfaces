@@ -86,6 +86,20 @@ class ChartDrawer {
 	}
 	
 	
+	getClosestJDCoords(JD) {
+		// price is right rules: closest value without going over.
+		for (let i = 0; i < this.jd_values.length; i++) {
+			if (this.jd_values[i].JD > JD) {
+				// Return the one just before
+				return this.jd_values[Math.max(0, i - 1)];
+			}
+		}
+		
+		// Fallback.
+		return this.jd_values[0];
+	}
+	
+	
 	plotPoint(x, y, radius = 10) {
 		const canvasCoords = this.toCanvasCoordinates(x, y);
 		this.ctx.beginPath();
