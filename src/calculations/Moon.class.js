@@ -5,6 +5,7 @@
  */
 
 import { MoonParameters } from './OrbitalParameters';
+import {MoonCoordinates} from './MoonCoordinates.class';
 
 class Moon {
 	
@@ -26,7 +27,32 @@ class Moon {
 		this.meanLongitude_deg = MoonParameters.meanLongitude; // [initial, per century]
 		this.longitudeOfPeriapsis_deg = MoonParameters.longitudeOfPeriapsis; // [initial, per century]
 		this.longitudeOfTheAscendingNode_deg = MoonParameters.longitudeOfTheAscendingNode; // [initial, per century]
+		
+		this.coordinates = new MoonCoordinates(this);
 	}
+	
+	get JD() { return this._JD }
+	set JD(newJD) { this._JD = newJD; }
+	
+	///
+	/// Pass-throughs from `Moon` to `MoonCoordinates`
+	///
+	get heliocentric()    { return this.coordinates.heliocentric }
+	get ecliptic()        { return this.coordinates.ecliptic }
+	get equatorial()      { return this.coordinates.equatorial }
+	get v()               { return this.coordinates.v }
+	get r()               { return this.coordinates.r }
+	get ecliptic_latlng() { return this.coordinates.ecliptic_latlng }
+	get RA_deg() { return this.coordinates.RA_deg }
+	get Decl_deg() { return this.coordinates.Decl_deg }
+	get r_geo() { return this.coordinates.r_geo }
+	get geocentric() { return this.coordinates.geocentric }
+	
+	
+	
+	///
+	/// Basics
+	///
 	
 	/**
 	 * Math.sin, but for angles given in degrees.

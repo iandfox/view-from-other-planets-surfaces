@@ -214,6 +214,11 @@ class SolarCoordinates {
 	get Decl_deg() {
 		return (this.Decl * this.RAD_TO_DEG) % 360;
 	}
+	
+	
+	
+	// TODO 2021-07-12: THIS IS WRONG! i just really want to see if it'll work. i need to have all orbital params able to be calculated from this and from moon... need them consistent with each other for easier graphing.
+	get w_deg() { return 282.9404; }
 }
 
 export {

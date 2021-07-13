@@ -10,6 +10,7 @@
  -             julian-day-start="12345"
  -             julian-day-end="67890"
  -             julian-day-step="0.1"
+ -             :delay-ms="5"
  -         ></ChartsViewer>
  - 
  - @created 2021-07-11
@@ -23,7 +24,7 @@
 		</button>
 		<br>
 		<div class="range-wrapper">
-			<label>Julian Day: {{}}</label>
+			<label>Julian Day: +{{numberFormat.format(julianDay - julianDayStart)}}</label>
 			<input
 				type="range"
 				v-model.number="julianDay"
@@ -37,6 +38,21 @@
 				{{numberFormat.format(julianDay)}}
 				<br>
 				<small><code>[+<span class="number__adhd-issues">{{numberFormat.format(julianDay - julianDayStart)}}</span> :: <span class="number__adhd-issues">{{numberFormat.format(Math.floor(julianDay - julianDayStart))}}</span> days and <span class="number__adhd-issues">{{numberFormat.format(((julianDay - julianDayStart) % 1) * 24)}}</span> hours]</code></small>
+			</span>
+		</div>
+		<div class="range-wrapper" v-if="isDelayed">
+			<label>Delay:</label>
+			<input
+				type="range"
+				v-model.number="delayMs"
+				:min="1"
+				:max="200"
+				:step="1"
+			/>
+			<span class="min">{{1}} ms</span>
+			<span class="max">{{200}} ms</span>
+			<span class="value">
+				{{delayMs}} ms
 			</span>
 		</div>
 	</teleport>
@@ -107,6 +123,18 @@
 				required: false,
 				default: 1 / 24,
 			},
+			
+			isDelayed: {
+				type: Boolean,
+				required: false,
+				default: false,
+			},
+			
+			delayMs: {
+				type: Number,
+				required: false,
+				default: 50,
+			}
 		},
 		
 		data() {
@@ -207,13 +235,20 @@
 					const alphaEnd = 1;
 					const alphaDelta = (alphaEnd - alphaStart) / chart.drawer.x_values.length;
 					const colorDelta = 255 / chart.drawer.x_values.length;
-					chart.drawer.plotAllPoints(
-						10,
-						// Colors: red to green
-						(index) => `rgba(${255 - (index * colorDelta)}, ${index * colorDelta}, 0, ${alphaStart + (index * alphaDelta)})`
-					);
-					
-					this.isDrawing -= 1;
+					const colorFunction = (index) => `rgba(${255 - (index * colorDelta)}, ${index * colorDelta}, 0, ${alphaStart + (index * alphaDelta)})`;
+					if (this.isDelayed) {
+						chart.drawer.plotAllPointsDelayed(5, this.delayMs, colorFunction, () => {
+							this.isDrawing -= 1;
+						});
+					} else {
+						chart.drawer.plotAllPoints(
+							10,
+							// Colors: red to green
+							colorFunction
+						);
+						
+						this.isDrawing -= 1;
+					}
 				});
 				
 				console.groupEnd();

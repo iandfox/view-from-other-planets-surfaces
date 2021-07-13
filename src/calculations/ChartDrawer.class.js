@@ -46,8 +46,18 @@ class ChartDrawer {
 		const range_y = {min: Math.min(...this.y_values), max: Math.max(...this.y_values), length: null};
 		// for degrees-based stuff, i want to see between 0 and 360 in the y-axis.
 		if (this.chart.y.indexOf('_deg') !== -1) {
-			range_y.min = Math.min(range_y.min, 0);
-			range_y.max = Math.max(range_x.max, 360);
+			if (range_y.min < 0) {
+				// We might want to show (-180, 180) and not, say, (-47, 360)
+				range_y.min = -180;
+				if (range_y.max <= 180) {
+					range_y.max = 180;
+				} else {
+					range_y.max = 360;
+				}
+			} else {
+				range_y.min = 0;
+				range_y.max = 360;
+			}
 		}
 		range_y.length = range_y.max - range_y.min;
 		
