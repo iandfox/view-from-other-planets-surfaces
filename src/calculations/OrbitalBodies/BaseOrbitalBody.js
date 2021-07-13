@@ -10,28 +10,19 @@
  * @since 2021-07-12
  */
 
-
-/**
- * TODO: the following
- *     - "ecliptic rectangular geocentric coordinates"
- *         xs = r * cos(lonsun)
- *         ys = r * sin(lonsun)
- *     - "equatorial rectangular geocentric coordinates"
- *         xe = xs
- *         ye = ys * cos(ecl)
- *         ze = ys * sin(ecl)
- *     - RA
- *         RA  = atan2( ye, xe )
- *     - Decl
- *         Dec = atan2( ze, sqrt(xe*xe+ye*ye) )
- */
-
-
-
 class BaseOrbitalBody {
 	
 	constructor(JD = 2459404.5) {
 		this.JD = JD;
+	}
+	
+	
+	///
+	/// Utils
+	///
+	
+	clampAngle(angleInDegrees) {
+		return ((angleInDegrees % 360) + 360) % 360;
 	}
 	
 	
@@ -46,7 +37,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get N_deg() {
-		console.warning('! N_deg has not been implemented !');
+		console.warn('! N_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -57,7 +48,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get i_deg() {
-		console.warning('! i_deg has not been implemented !');
+		console.warn('! i_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -68,7 +59,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get w_deg() {
-		console.warning('! w_deg has not been implemented !');
+		console.warn('! w_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -79,7 +70,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get a() {
-		console.warning('! a has not been implemented !');
+		console.warn('! a has not been implemented !');
 		return 0;
 	}
 	
@@ -90,7 +81,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get e() {
-		console.warning('! e has not been implemented !');
+		console.warn('! e has not been implemented !');
 		return 0;
 	}
 	
@@ -101,7 +92,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get M_deg() {
-		console.warning('! M_deg has not been implemented !');
+		console.warn('! M_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -118,7 +109,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get v_deg() {
-		console.warning('! v_deg has not been implemented !');
+		console.warn('! v_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -129,7 +120,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get r() {
-		console.warning('! r has not been implemented !');
+		console.warn('! r has not been implemented !');
 		return 0;
 	}
 	
@@ -140,7 +131,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get E_deg() {
-		console.warning('! E_deg has not been implemented !');
+		console.warn('! E_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -213,6 +204,68 @@ class BaseOrbitalBody {
 	 */
 	get ecl_deg() {
 		return 23.4393 - 3.563E-7 * this.JD;
+	}
+	
+	/**
+	 * Right Ascension
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get RA() {
+		console.warn('!  has not been implemented !');
+		return 0;
+	}
+	
+	/**
+	 * @see RA
+	 * @return {number}
+	 */
+	get RA_deg() { return this.clampAngle(this.RA * 180 / Math.PI) }
+	
+	/**
+	 * Declination
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get Decl() {
+		console.warn('!  has not been implemented !');
+		return 0;
+	}
+	
+	/**
+	 * @see Decl
+	 * @return {number}
+	 */
+	get Decl_deg() { return this.clampAngle(this.Decl * 180 / Math.PI) }
+	
+	
+	///
+	/// Coordinates
+	///
+	
+	
+	/**
+	 * Ecliptic rectangular geocentric coordinates
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get eclipticCoordinates() {
+		console.warn('! eclipticCoordinates has not been implemented !');
+		return {x: 0, y: 0, z: 0};
+	}
+	
+	/**
+	 * Equatorial rectangular geocentric coordinates
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get equatorialCoordinates() {
+		console.warn('!  has not been implemented !');
+		return {x: 0, y: 0, z: 0};
 	}
 }
 

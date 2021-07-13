@@ -78,6 +78,7 @@
 				height="768"
 				:ref="'canvas_' + chart.y + '__' + index"
 			></canvas>
+			<div v-if="chart.closestJDCoords"><small>(x: {{numberFormat.format(chart.closestJDCoords.x)}}, y: {{numberFormat.format(chart.closestJDCoords.y)}})</small></div>
 			<details v-if="chart.description">
 				<summary><small>Description</small></summary>
 				{{chart.description}}
@@ -206,6 +207,7 @@
 					// Draw current point. much less complex than the jdHistory and likely good enough for my current debug.
 					this.charts.forEach((chart) => {
 						const {x, y} = chart.drawer.getClosestJDCoords(this.julianDay);
+						chart.closestJDCoords = {x, y};
 						chart.drawer.ctx.fillStyle = 'purple';
 						chart.drawer.plotPoint(x, y);
 						// TODO 2021-07-12: draw history.

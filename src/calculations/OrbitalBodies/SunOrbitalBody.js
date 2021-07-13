@@ -19,13 +19,24 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	///
 	
 	/**
-	 * true longitude
+	 * Sun's true longitude
 	 *
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
 	get lonsun_deg() {
 		return this.v_deg + this.w_deg;
+	}
+	
+	
+	/**
+	 * Sun's mean longitude
+	 *
+	 * @since 2021-07-13
+	 * @return {number}
+	 */
+	get Ls_deg() {
+		return this.M_deg + this.w_deg;
 	}
 	
 	
@@ -38,22 +49,24 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	/**
 	 * Longitude of the ascending node
 	 *
+	 * for the sun, it's always 0 deg (cause it's on the ecliptic by defn)
+	 *
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
 	get N_deg() {
-		console.warning('! N_deg has not been implemented !');
 		return 0;
 	}
 	
 	/**
 	 * Inclination
 	 *
+	 * for the sun, it's always 0 deg (cause it's on the ecliptic by defn)
+	 *
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
 	get i_deg() {
-		console.warning('! i_deg has not been implemented !');
 		return 0;
 	}
 	
@@ -64,19 +77,22 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get w_deg() {
-		console.warning('! w_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(282.9404 + 4.70935E-5 * this.JD);
 	}
 	
 	/**
 	 * semi-major axis (i.e., mean distance from parent)
 	 *
+	 * 1 AU
+	 *
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
 	get a() {
-		console.warning('! a has not been implemented !');
-		return 0;
+		return 1; // AU
+		
+		// Alternately:
+		return 1.496e+8; // KM
 	}
 	
 	/**
@@ -86,8 +102,7 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get e() {
-		console.warning('! e has not been implemented !');
-		return 0;
+		return 0.016709 - 1.151E-9 * this.JD;
 	}
 	
 	/**
@@ -97,8 +112,7 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get M_deg() {
-		console.warning('! M_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(356.0470 + 0.9856002585 * this.JD);
 	}
 	
 	
@@ -119,7 +133,7 @@ class SunOrbitalBody extends BaseOrbitalBody {
 			x_v = dcos(E_deg) - e, // r * cos(v)
 			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * dsin(E_deg); // r * sin(v)
 		
-		return Math.atan2(y_v, x_v);
+		return this.clampAngle((Math.atan2(y_v, x_v) * 180 / Math.PI));
 	}
 	
 	/**
@@ -148,6 +162,70 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	get E_deg() {
 		const M_deg = this.M_deg,
 			e = this.e;
-		return M_deg + (e * dsin(M_deg) * (1 + e * dcos(M_deg))) * 180 / Math.PI;
+		return this.clampAngle(M_deg + (e * dsin(M_deg) * (1 + e * dcos(M_deg))) * 180 / Math.PI);
 	}
+	
+	/**
+	 * Right Ascension
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get RA() {
+		const equa = this.equatorialCoordinates;
+		return Math.atan2(equa.y, equa.x);
+	}
+	
+	/**
+	 * Declination
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get Decl() {
+		const equa = this.equatorialCoordinates;
+		return Math.atan2(equa.z, Math.sqrt(Math.pow(equa.x, 2) + Math.pow(equa.y, 2)));
+	}
+	
+	
+	///
+	/// Coordinates
+	///
+	
+	
+	/**
+	 * Ecliptic rectangular geocentric coordinates
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get eclipticCoordinates() {
+		const r = this.r,
+			lonsun_deg = this.lonsun_deg;
+		return {
+			x: r * dcos(lonsun_deg),
+			y: r * dsin(lonsun_deg),
+			z: 0,
+		};
+	}
+	
+	/**
+	 * Equatorial rectangular geocentric coordinates
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get equatorialCoordinates() {
+		const eclip = this.eclipticCoordinates,
+			ecl_deg = this.ecl_deg;
+		return {
+			x: eclip.x,
+			y: eclip.y * dcos(ecl_deg),
+			z: eclip.y * dsin(ecl_deg),
+		}
+	}
+}
+
+export {
+	SunOrbitalBody
 }

@@ -58,6 +58,8 @@
 					
 					{x: 'time', y: 'Decl', title: 'Sun\'s declination, delta.', description: ''},
 					
+					{x: 'RA', y: 'Decl', title: 'RA vs Decl', description: ''},
+					
 					{x: 'time', y: 'RA_apparent', title: '"apparent" position of sun :shrug:', description: ''},
 					
 					{x: 'time', y: 'Decl_apparent', title: '"apparent" position of sun :shrug:', description: ''},
