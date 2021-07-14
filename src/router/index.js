@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import SunView from '../views/sandbox-views/SunView.vue'
 import SiderealTimeView from '../views/sandbox-views/SiderealTimeView';
 import AltAzView from '../views/sandbox-views/AltAzView';
+import MoonView from '../views/sandbox-views/MoonView';
 
 const routes = [
 	{
@@ -13,13 +14,7 @@ const routes = [
 	{
 		path: '/sun',
 		name: 'SunView',
-		// route level code-splitting
-		// this generates a separate chunk (about.[hash].js) for this route
-		// which is lazy-loaded when the route is visited.
 		component: SunView,
-		// component: function() {
-		// 	return import(/* webpackChunkName: "about" */ '../views/About.vue')
-		// }
 	},
 	{
 		path: '/sidereal-time',
@@ -30,6 +25,11 @@ const routes = [
 		path: '/azimuthal',
 		name: 'AltAzView',
 		component: AltAzView,
+	},
+	{
+		path: '/moon',
+		name: 'MoonView',
+		component: MoonView,
 	},
 ];
 

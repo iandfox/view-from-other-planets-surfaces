@@ -7,6 +7,8 @@
 		<router-link to="/sidereal-time">Sidereal Time</router-link>
 		|
 		<router-link to="/azimuthal">Azimuthal</router-link>
+		|
+		<router-link to="/moon">Moon</router-link>
 	</div>
 	<router-view/>
 	

@@ -1,7 +1,6 @@
 <!--
  - Vue Component: SunOrbitalBodySandbox
- -     SolarCoordinates visualization
- -     
+ -
  -     Example usage:
  -         <SunOrbitalBodySandbox></SunOrbitalBodySandbox>
  - 

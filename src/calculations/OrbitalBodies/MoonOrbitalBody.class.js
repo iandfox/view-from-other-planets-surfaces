@@ -1,0 +1,226 @@
+/**
+ * MoonOrbitalBody
+ *
+ * @since 2021-07-13
+ */
+import {BaseOrbitalBody} from './BaseOrbitalBody.class.js';
+
+const dcos = (angle) => Math.cos(angle * Math.PI / 180);
+const dsin = (angle) => Math.sin(angle * Math.PI / 180);
+
+class MoonOrbitalBody extends BaseOrbitalBody {
+	
+	constructor(JD = 2459404.5) {
+		super(JD);
+	}
+	
+	///
+	/// Moon-specific
+	///
+	
+	///
+	/// Orbital params
+	///
+	
+	/**
+	 * Longitude of the ascending node
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get N_deg() {
+		return 125.1228 - 0.0529538083 * this.JD;
+	}
+	
+	/**
+	 * Inclination
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get i_deg() {
+		return 5.1454;
+	}
+	
+	/**
+	 * argument of periapsis
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get w_deg() {
+		return 318.0634 + 0.1643573223 * this.JD;
+	}
+	
+	/**
+	 * semi-major axis (i.e., mean distance from parent)
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get a() {
+		return 60.2666; // (Earth radii)
+	}
+	
+	/**
+	 * Eccentricity
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get e() {
+		return 0.054900;
+	}
+	
+	/**
+	 * Mean anomaly (0 at periapsis. increase uniformly with time)
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get M_deg() {
+		return 115.3654 + 13.0649929509 * this.JD;
+	}
+	
+	
+	///
+	/// Related Orbital Elements
+	///
+	
+	
+	/**
+	 * true anomaly (angle between position and periapsis)
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get v_and_r() {
+		const e = this.e,
+			E = this.E,
+			x_v = Math.cos(E) - e,
+			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
+		return {
+			v: Math.atan2(y_v, x_v),
+			r: Math.sqrt(Math.pow(x_v, 2) + Math.pow(y_v, 2)),
+		}
+	}
+	get v() { return this.v_and_r.v }
+	get r() { return this.v_and_r.r }
+	/**
+	 * @see v
+	 * @return {number}
+	 */
+	get v_deg() {
+		return this.clampAngle(this.v * 180 / Math.PI);
+	}
+	
+	
+	/**
+	 * E, the eccentric anomaly - angular position of body. this is the big mamma jamma.
+	 *     This is from the other source, not the nice website. it has calculus in it, should be better.
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get E() {
+		const M_deg = this.M_deg, e = this.e;
+		const M = M_deg * Math.PI / 180;
+		const sin = Math.sin, cos = Math.cos;
+		
+		let E = M + (e * sin(M));
+		let sanity = 0;
+		while (++sanity > 0) {
+			const dM = M - (E - (e * sin(E)));
+			const dE = dM / (1 - (e * cos(E)));
+			E += dE;
+			if (dE < 0.001) {
+				break;
+			}
+		}
+		
+		return E;
+	}
+	
+	/**
+	 * @see E
+	 * @return {*}
+	 */
+	get E_deg() {
+		return this.clampAngle(this.E * 180 / Math.PI);
+	}
+	
+	/**
+	 * Right Ascension
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get RA() {
+		const equa = this.equatorialCoordinates;
+		return Math.atan2(equa.y, equa.x);
+	}
+	
+	/**
+	 * Declination
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get Decl() {
+		const equa = this.equatorialCoordinates;
+		return Math.atan2(equa.z, Math.sqrt(Math.pow(equa.x, 2) + Math.pow(equa.y, 2)));
+	}
+	
+	
+	///
+	/// Coordinates
+	///
+	
+	
+	
+	/**
+	 * Geocentric position in the ecliptic coordinate system
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get geocentricCoordinates() {
+		const cos = Math.cos,
+			sin = Math.sin;
+		const N = this.N_deg * Math.PI / 180,
+			vw = this.v + (this.w_deg * Math.PI / 180),
+			r = this.r,
+			i = this.i_deg * Math.PI / 180;
+		const cN = cos(N), sN = sin(N),
+			cVW = cos(vw), sVW = sin(vw),
+			cI = cos(i),   sI = sin(i);
+		
+		return {
+			x: r * ((cN * cVW) - (sN * sVW * cI)),
+			y: r * ((sN * cVW) + (cN * sVW * cI)),
+			z: r * (sVW * sI),
+		}
+	}
+	get geocentric() { return this.geocentricCoordinates }
+	
+	/**
+	 * Equatorial rectangular geocentric coordinates
+	 *
+	 * @since 2021-07-12
+	 * @return {object}
+	 */
+	get equatorialCoordinates() {
+		const geo = this.geocentricCoordinates,
+			ecl = this.ecl_deg * Math.PI / 180;
+		return {
+			x: geo.x,
+			y: geo.y * Math.cos(ecl),
+			z: geo.y * Math.sin(ecl),
+		}
+	}
+	get equatorial() { return this.equatorialCoordinates() }
+}
+
+export {
+	MoonOrbitalBody
+}
