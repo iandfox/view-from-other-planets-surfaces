@@ -4,10 +4,9 @@
  *
  * @since 2021-07-13
  */
-import {MoonOrbitalBody} from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
-import {SiderealTime} from '../calculations/Utils/SiderealTime.class';
-import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
 import {AzimuthalCoordinates} from '../calculations/Utils/AzimuthalCoordinates.class';
+
+import seedrandom from 'seedrandom';
 
 class Space {
 	
@@ -21,6 +20,11 @@ class Space {
 		planets = [],
 		JD = 2459404.5
 	) {
+		/* See https://github.com/davidbau/seedrandom.
+		 * I want the stars field to be consistent, so I can start to do constellations :3
+		 */
+		seedrandom('malta', { global: true }); // Global PRNG: set Math.random.
+		
 		this.canvas = spaceCanvas;
 		this.ctx = spaceCanvas.getContext('2d');
 		this.starsCanvas = starsCanvas;
@@ -63,14 +67,14 @@ class Space {
 	/**
 	 * @since 2021-07-13
 	 */
-	draw() {
+	draw(shouldDrawHorizon = true, shouldDrawSky = true, shouldDrawCompass = true) {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.drawHorizon();
-		this.drawSky();
+		if (shouldDrawHorizon) { this.drawHorizon(); }
+		if (shouldDrawSky)     { this.drawSky(); }
 		this.drawSun();
 		this.drawPlanets();
 		this.drawMoons();
-		this.drawCompass();
+		if (shouldDrawCompass) { this.drawCompass(); }
 		
 		this.drawDebug();
 	}
@@ -111,6 +115,8 @@ class Space {
 	 * @param ctx
 	 */
 	drawStars(canvas = this.canvas, ctx = this.ctx) {
+		const randColorDelta = () => Math.floor(Math.random() * 40);
+		
 		const rand = {
 			x: () => (
 				this.viewport.left + (Math.random() * (this.viewport.right - this.viewport.left))
@@ -119,15 +125,15 @@ class Space {
 				this.viewport.bottom + (Math.random() * (this.viewport.top - this.viewport.bottom))
 			),
 			starColor: () => {
-				return `rgba(${255 - Math.floor(Math.random() * 10)}, ${255 - Math.floor(Math.random() * 10)}, ${255 - Math.floor(Math.random() * 10)}, ${Math.floor(Math.random() * 255)})`
+				return `rgba(${255 - randColorDelta()}, ${255 - randColorDelta()}, ${255 - randColorDelta()}, ${Math.floor(Math.random() * 255)})`
 			},
 		};
 		
-		for (let i = 0; i < 1000; i++) {
+		for (let i = 0; i < 10000; i++) {
 			this.stars.push({
 				x: rand.x(),
 				y: rand.y(),
-				radius: (Math.random() * 2),
+				radius: (Math.random() * 1.5),
 				color: rand.starColor(),
 			});
 		}
@@ -221,7 +227,9 @@ class Space {
 	 * @param ctx
 	 */
 	drawCompass(canvas = this.canvas, ctx = this.ctx) {
-		for (let x = -180; x <= 180; x += 10) { // TODO: only draw in viewport
+		const startTick = Math.max(10 * Math.floor(this.viewport.left / 10), -180);
+		const endTick = Math.max(10 * Math.ceil(this.viewport.left / 10), 180);
+		for (let x = startTick; x <= endTick; x += 10) { // TODO: only draw in viewport
 			this.tickMark(x, 0, x, 'yellow', 1, 6, true, canvas, ctx);
 		}
 	}

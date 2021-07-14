@@ -13,8 +13,26 @@ import { clampAngle, clampAngle180 } from '../Utils/ClampAngle';
 
 class BaseOrbitalBody {
 	
-	constructor(JD = 2459404.5) {
+	constructor(
+		JD = 2459404.5,
+		{
+			N = [0, 0],
+			i = [0, 0],
+			w = [0, 0],
+			a = [0, 0],
+			e = [0, 0],
+			M = [0, 0],
+		} = {},
+		{
+			ecl_param = [23.4393, -3.563E-7],
+			color = 'white',
+			radius = 5,
+		} = {}
+	) {
 		this.JD = JD;
+		
+		this.params = {N, i, w, a, e, M};
+		this.ecl_param = ecl_param;
 		
 		this.clampAngle = clampAngle;
 		this.clampAngle180 = clampAngle180;
@@ -31,8 +49,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get N_deg() {
-		console.warn('! N_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(this.params.N[0] + this.params.N[1] * this.JD);
 	}
 	
 	/**
@@ -42,8 +59,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get i_deg() {
-		console.warn('! i_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(this.params.i[0] + this.params.i[1] * this.JD);
 	}
 	
 	/**
@@ -53,8 +69,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get w_deg() {
-		console.warn('! w_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(this.params.w[0] + this.params.w[1] * this.JD);
 	}
 	
 	/**
@@ -64,8 +79,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get a() {
-		console.warn('! a has not been implemented !');
-		return 0;
+		return this.params.a[0] + this.params.a[1] * this.JD;
 	}
 	
 	/**
@@ -75,8 +89,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get e() {
-		console.warn('! e has not been implemented !');
-		return 0;
+		return this.params.e[0] + this.params.e[1] * this.JD;
 	}
 	
 	/**
@@ -86,8 +99,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get M_deg() {
-		console.warn('! M_deg has not been implemented !');
-		return 0;
+		return this.clampAngle(this.params.M[0] + this.params.M[1] * this.JD);
 	}
 	
 	
@@ -197,7 +209,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get ecl_deg() {
-		return 23.4393 - 3.563E-7 * this.JD;
+		return this.clampAngle180(this.ecl_param[0] + this.ecl_param[1] * this.JD);
 	}
 	
 	/**

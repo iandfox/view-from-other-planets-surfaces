@@ -18,7 +18,7 @@
 
 <template>
 	<div class="range-wrapper">
-		<label v-if="label">{{label}}</label>
+		<label v-if="label">{{label}} = <span class="value">{{numberFormat.format(value)}}&nbsp;{{units}}</span></label>
 		<input
 			type="range"
 			v-model.number="value"
@@ -29,9 +29,9 @@
 			v-bind="$attrs"
 			@wheel.passive="onWheel"
 		/>
-		<span class="min">{{min}}<span v-if="units"> {{units}}</span></span>
-		<span class="max">{{max}}<span v-if="units"> {{units}}</span></span>
-		<span class="value">{{numberFormat.format(value)}}<span v-if="units"> {{units}}</span></span>
+		<span class="min">{{min}}&nbsp;{{units}}</span>
+		<span class="max">{{max}}&nbsp;{{units}}</span>
+		<span class="value" v-if="! label">{{numberFormat.format(value)}}&nbsp;{{units}}</span>
 	</div>
 </template>
 
@@ -141,15 +141,14 @@
 
 <style scoped>
 	.range-wrapper {
-		font-size: 11px;
 		display: grid;
 		grid-template-areas:
 			" .  label  ."
 			"min input max"
-			" .   val   . "
-	;
+			" .   val   . ";
 		grid-template-columns:
-			minmax(50px, fit-content) minmax(200px, 1fr) minmax(50px, fit-content);
+			minmax(75px, fit-content) minmax(200px, 1fr) minmax(75px, fit-content);
+		align-items: center;
 	}
 	.range-wrapper label {
 		font-weight: bold;
@@ -167,6 +166,12 @@
 	.range-wrapper .max {
 		grid-area: max;
 		text-align: left;
+	}
+	.range-wrapper .max,
+	.range-wrapper .min {
+		font-size: 0.8em;
+		display: inline-block;
+		vertical-align: center;
 	}
 	.range-wrapper .value {
 		grid-area: val;

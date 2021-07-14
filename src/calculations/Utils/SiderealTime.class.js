@@ -15,9 +15,6 @@ class SiderealTime {
 		this.localLongitude_deg = -111.01908142663117;
 		this.localLatitude_deg = 32.198840114469995;
 		this.UT_hours = -7;
-		
-		this.clampAngle = clampAngle;
-		this.clampAngle180 = clampAngle180;
 	}
 	
 	

@@ -10,76 +10,20 @@ const dsin = (angle) => Math.sin(angle * Math.PI / 180);
 
 class MoonOrbitalBody extends BaseOrbitalBody {
 	
-	constructor(JD = 2459404.5) {
-		super(JD);
-	}
-	
-	///
-	/// Moon-specific
-	///
-	
-	///
-	/// Orbital params
-	///
-	
-	/**
-	 * Longitude of the ascending node
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get N_deg() {
-		return 125.1228 - 0.0529538083 * this.JD;
-	}
-	
-	/**
-	 * Inclination
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get i_deg() {
-		return 5.1454;
-	}
-	
-	/**
-	 * argument of periapsis
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get w_deg() {
-		return 318.0634 + 0.1643573223 * this.JD;
-	}
-	
-	/**
-	 * semi-major axis (i.e., mean distance from parent)
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get a() {
-		return 60.2666; // (Earth radii)
-	}
-	
-	/**
-	 * Eccentricity
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get e() {
-		return 0.054900;
-	}
-	
-	/**
-	 * Mean anomaly (0 at periapsis. increase uniformly with time)
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get M_deg() {
-		return 115.3654 + 13.0649929509 * this.JD;
+	constructor(
+		JD = 2459404.5,
+		params = {
+			// Earth's moon
+			// N: [125.1228, -0.0529538083],
+			// i: [5.1454, 0],
+			// w: [318.0634, 0.1643573223],
+			// a: [60.2666, 0], // in Earth radii
+			// e: [0.054900, 0],
+			// M: [115.3654, 13.0649929509],
+		},
+		options = {}
+	) {
+		super(JD, params, options);
 	}
 	
 	
