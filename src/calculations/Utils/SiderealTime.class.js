@@ -15,7 +15,6 @@ class SiderealTime {
 		this.localLongitude_deg = -111.01908142663117;
 		this.localLatitude_deg = 32.198840114469995;
 		this.UT_hours = -7;
-		this.UT_deg = this.UT_hours * 15;
 		
 		this.clampAngle = clampAngle;
 		this.clampAngle180 = clampAngle180;
@@ -24,6 +23,8 @@ class SiderealTime {
 	
 	get JD()    { return this.sun.JD }
 	set JD(val) { this.sun.JD = val }
+	
+	get UT_deg() { return this.UT_hours * 15 }
 	
 	
 	/**

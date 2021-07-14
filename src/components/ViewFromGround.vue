@@ -10,25 +10,20 @@
 
 <template>
 	<div class="controls">
-		<div class="range-wrapper">
-			<label>JD:</label>
-			<input
-				type="range"
-				v-model.number="JD"
-				:min="2459400"
-				:max="2459500"
-				:step="0.0001"
-				@change="draw"
-			/>
-			<span class="min">2459400</span>
-			<span class="max">2459500</span>
-			<span class="value">{{numberFormat.format(JD)}}</span>
-		</div>
+		<InputRange
+			v-model="JD"
+			label="JD"
+			:min="0"
+			:max="365"
+			:step="autoRate"
+			:fraction-digits="4"
+		></InputRange>
 		<div style="font-size: 0.8em;">
 			<label><input type="checkbox" v-model="isAuto"> Auto</label>
-			<div>Rate: <input type="number" v-model="autoRate" step="0.001"></div>
+			<div>Rate: <input type="number" v-model.number="autoRate" step="0.001"></div>
 		</div>
 	</div>
+	
 	<div class="space">
 		<canvas width="1600" height="800" id="stars" ref="stars"></canvas>
 		<canvas width="1600" height="800" id="space" ref="space"></canvas>
@@ -41,10 +36,11 @@
 	import {AzimuthalCoordinates} from '../calculations/Utils/AzimuthalCoordinates.class';
 	import {Space} from '../SpaceDrawing/Space.class';
 	import { ref, toRaw } from 'vue';
+	import InputRange from './fields/InputRange';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {},
+		components: {InputRange},
 		
 		data() {
 			return {
@@ -146,7 +142,6 @@
 		max-height: 100%;
 		object-fit: contain;
 		display: block;
-		/*box-shadow: 0 0 5px 0 white;*/
 		
 		position: fixed;
 		top: 0; left: 0; right: 0; bottom: 0;
@@ -159,8 +154,6 @@
 		z-index: 20;
 	}
 	
-	/*#stars { display: none; }*/
-	
 	.controls {
 		position: fixed;
 		bottom: 0;
@@ -171,48 +164,5 @@
 	
 	input, code {
 		color: white;
-	}
-	
-	/* range slider related styles TODO 2021-07-11: this is a great idea for a generic/util component, i should turn it into one. Well... not me. You. Yes, you, Future Ian. :wave: */
-	.range-wrapper {
-		font-size: 11px;
-		display: grid;
-		grid-template-areas:
-			" .  label  ."
-			"min input max"
-			" .   val   . "
-	;
-		grid-template-columns:
-			minmax(50px, fit-content) minmax(200px, 1fr) minmax(50px, fit-content);
-	}
-	.range-wrapper label {
-		font-weight: bold;
-		grid-area: label;
-		text-align: center;
-	}
-	.range-wrapper input[type="range"] {
-		grid-area: input;
-		
-	}
-	.range-wrapper .min {
-		grid-area: min;
-		text-align: right;
-	}
-	.range-wrapper .max {
-		grid-area: max;
-		text-align: left;
-	}
-	.range-wrapper .value {
-		grid-area: val;
-		text-align: center;
-		min-width: 220px
-	}
-	.range-wrapper .value small code {
-		display: inline-block;
-	}
-	.range-wrapper .value small code span {
-		display: inline-block;
-		min-width: 5ch;
-		text-align: right;
 	}
 </style>

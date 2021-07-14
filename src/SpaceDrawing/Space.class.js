@@ -46,12 +46,12 @@ class Space {
 	 */
 	draw() {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		// this.drawBackground();
-		// this.ctx.drawImage(this.starsCanvas, 0, 0);
 		this.drawSun();
-		// this.drawPlanets();
+		this.drawSky();
+		this.drawPlanets();
 		this.drawMoons();
-		// this.drawCompass();
+		this.drawHorizon();
+		this.drawCompass();
 	}
 	
 	/**
@@ -88,7 +88,7 @@ class Space {
 			this.stars.push({
 				x: rand.x(),
 				y: rand.y(),
-				radius: (Math.random() < 0.5 ? 1 : 2),
+				radius: (Math.random() * 2),
 				color: rand.starColor(),
 			});
 		}
@@ -114,6 +114,17 @@ class Space {
 	
 	
 	/**
+	 * @since 2021-07-14
+	 *
+	 * @param canvas
+	 * @param ctx
+	 */
+	drawSky(canvas = this.canvas, ctx = this.ctx) {
+		//
+	}
+	
+	
+	/**
 	 * @since 2021-07-13
 	 *
 	 * @param canvas
@@ -135,6 +146,23 @@ class Space {
 		const moon = this.moon;
 		const { alt_deg, az_deg } = moon.azi.alt_az;
 		this.circle(az_deg, alt_deg, 48, 'grey', canvas, ctx);
+	}
+	
+	
+	/**
+	 * @since 2021-07-14
+	 *
+	 * @param canvas
+	 * @param ctx
+	 */
+	drawHorizon(canvas = this.canvas, ctx = this.ctx) {
+		// const c = (x, y) => this.toCanvas(x, y, canvas, ctx);
+		//
+		// const topLeft = c(this.)
+		//
+		// this.ctx.beginPath();
+		//
+		// this.ctx.moveTo()
 	}
 	
 	
