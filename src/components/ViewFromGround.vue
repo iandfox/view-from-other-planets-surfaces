@@ -9,129 +9,16 @@
 -->
 
 <template>
-	<div class="controls">
-		<button class="show-hide" @click="config.areControlsHidden = ! config.areControlsHidden">Show/Hide Controls</button>
-		
-		<InputRange
-			v-model="JD"
-			label="JD"
-			:min="2458800"
-			:max="2459900"
-			:step="autoRate"
-			:fraction-digits="4"
-		></InputRange>
-		<InputJulianDate
-			v-model="JD"
-		></InputJulianDate>
-		
-		
-		<div style="font-size: 0.8em;">
-			<div>
-				<span>
-					Rate:
-					<br>
-					<label><input type="checkbox" v-model="isAuto"> Auto Forward</label>
-				</span> <input type="number" v-model.number="autoRate" step="0.001">
-			</div>
-		</div>
-		
-		<InputRange
-			v-model="config.obliquity"
-			label="Obliquity"
-			:min="-90"
-			:max="90"
-			:step="0.5"
-			units="deg"
-			:fraction-digits="1"
-			@input="setObliquityOnBodies"
-		></InputRange>
-		
-		<div>
-			<InputRange
-				v-model="config.localLongitude"
-				label="Local Longitude"
-				:min="-180"
-				:max="180"
-				:step="0.001"
-				units="deg"
-				:fraction-digits="3"
-				@input="setLocalLongLat"
-			></InputRange>
-			<InputRange
-				v-model="config.localLatitude"
-				label="Local Latitude"
-				:min="-90"
-				:max="90"
-				:step="0.001"
-				units="deg"
-				:fraction-digits="3"
-				@input="setLocalLongLat"
-			></InputRange>
-		</div>
-		
-		<div style="text-align: left; width:100px; margin: 0 auto;">
-			<label><input type="checkbox" v-model="config.shouldDrawHorizon"> Draw Horizon</label>
-			<br>
-			<label><input type="checkbox" v-model="config.shouldDrawSky"> Draw Sky</label>
-			<br>
-			<label><input type="checkbox" v-model="config.shouldDrawCompass"> Draw Compass</label>
-		</div>
-		
-		<!--<div>-->
-			<!-- TODO -->
-			<!--<div style="font-size: 0.8em"><strong>Viewport</strong></div>-->
-			<!--<input type="number" v-model.number="">-->
-		<!--</div>-->
-		
-		<div v-for="(moon, moonIndex) in moons">
-			<div style="font-size: 0.8em"><strong>Moon #{{moonIndex}}</strong></div>
-			<div v-if="config.moonParams[moonIndex]">
-				<InputRange
-					v-model="config.moonParams[moonIndex].N[0]"
-					label="Longitude of the ascending node"
-					:min="0" :max="360" :step="0.5"
-					units="deg" :fraction-digits="1"
-					@input="setMoonParam(0, 'N')"
-				></InputRange>
-				<InputRange
-					v-model="config.moonParams[moonIndex].i[0]"
-					label="Inclination"
-					:min="-90" :max="90" :step="0.5"
-					units="deg" :fraction-digits="1"
-					@input="setMoonParam(0, 'i')"
-				></InputRange>
-				<InputRange
-					v-model="config.moonParams[moonIndex].w[0]"
-					label="Arg of periapsis"
-					:min="0" :max="360" :step="0.5"
-					units="deg" :fraction-digits="1"
-					@input="setMoonParam(0, 'w')"
-				></InputRange>
-				<InputRange
-					v-model="config.moonParams[moonIndex].a[0]"
-					label="Semi-major axis"
-					:min="0" :max="500" :step="0.6"
-					units="" :fraction-digits="1"
-					@input="setMoonParam(0, 'a')"
-				></InputRange>
-				<InputRange
-					v-model="config.moonParams[moonIndex].e[0]"
-					label="Eccentricity"
-					:min="0" :max="1" :step="0.01"
-					units="" :fraction-digits="2"
-					@input="setMoonParam(0, 'e')"
-				></InputRange>
-				<InputRange
-					v-model="config.moonParams[moonIndex].M[0]"
-					label="Mean Anomaly"
-					:min="-180" :max="180" :step="0.5"
-					units="deg" :fraction-digits="1"
-					@input="setMoonParam(0, 'M')"
-				></InputRange>
-			</div>
-			<p v-else>Error: couldn't find moonParams[{{moonIndex}}]</p>
-		</div>
-	</div>
+	<GroundControls
+		v-model:config="config"
+		v-bind:jd="JD"
+		v-bind:sun="sun"
+		v-bind:moons="moons"
+		v-bind:planets="planets"
+		@increase:jd="JD += $event"
+		@update:obliquity="setObliquityOnBodies"
+		@update:lnglat="setLocalLongLat"
+	></GroundControls>
 	
 	<div class="space">
 		<canvas width="1600" height="800" id="stars" ref="stars"></canvas>
@@ -148,27 +35,16 @@
 	import InputRange from './fields/InputRange';
 	import ChartsViewer from './utils/ChartsViewer';
 	import InputJulianDate from './fields/InputJulianDate';
+	import ControlViewport from './view-controls/ControlViewport';
+	import GroundControls from './view-controls/GroundControls';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {InputJulianDate, ChartsViewer, InputRange},
+		components: {GroundControls, ControlViewport, InputJulianDate, ChartsViewer, InputRange},
 		
 		data() {
 			return {
 				space: null,
-				
-				isAuto: true,
-				autoRate: 0.001,
-				
-				intervalIds: [],
-				
-				// TODO: limit the viewport and be able to drag it around
-				viewport: {
-					bottom: -90,
-					top:     90,
-					left:   -180,
-					right:   180,
-				},
 				
 				numberFormat: new Intl.NumberFormat(
 					'en-US',
@@ -186,6 +62,18 @@
 					shouldDrawSky: true,
 					shouldDrawCompass: true,
 					moonParams: [],
+					
+					isAuto: true,
+					autoRate: 0.001,
+					
+					intervalIds: [],
+					
+					viewport: {
+						bottom: -90,
+						top:     90,
+						left:   -180,
+						right:   180,
+					},
 				},
 			}
 		},
@@ -221,6 +109,10 @@
 			}
 		},
 		
+		computed: {
+			viewport() { return this.config.viewport }
+		},
+		
 		mounted() {
 			// set initial reactive values
 			this.config.obliquity = this.sun.ecl_param[0];
@@ -232,7 +124,7 @@
 				document.getElementById('stars'),
 				document.getElementById('space'),
 				document.getElementById('ground'),
-				this.viewport,
+				this.config.viewport,
 				this.sun,
 				this.moons,
 				[] // planets
@@ -240,22 +132,12 @@
 			this.space.drawBackground(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
 			this.space.drawStars(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
 			this.draw();
-			
-			this.loop();
 		},
 		
-		unmounted() {
-			this.intervalIds.forEach((id) => {
-				clearTimeout(id);
-				clearInterval(id);
-				cancelAnimationFrame(id);
-			});
-		},
 		
 		watch: {
 			JD() {
-				const jd = parseFloat(this.JD);
-				this.space.JD = jd;
+				this.space.JD = parseFloat(this.JD);
 				this.draw();
 			}
 		},
@@ -264,21 +146,6 @@
 			draw() {
 				this.space.draw(this.config.shouldDrawHorizon, this.config.shouldDrawSky, this.config.shouldDrawCompass);
 			},
-			
-			loop() {
-				this.intervalIds = []; // TODO i dunno, do this better.
-				if (this.isAuto) {
-					if (! this.autoRate) {
-						this.isAuto = 0;
-					} else {
-						this.JD += parseFloat(this.autoRate);
-					}
-				}
-				this.intervalIds.push(requestAnimationFrame(() => {
-					this.loop();
-				}))
-			},
-			
 			
 			/**
 			 * @since 2021-07-14
@@ -347,39 +214,12 @@
 	#ground {
 		z-index: 30
 	}
-	
-	.controls {
-		font-size: 11px;
-		position: fixed;
-		bottom: 0;
-		left: 10vw;
-		right: 10vw;
-		max-height: 200px;
-		max-width: 80vw;
-		overflow: auto;
-		background: rgba(200, 200, 200, 0.9);
-		padding: var(--length-small);
-		z-index: 999;
-		
-		/*display: grid;*/
-		/*grid-template-columns: repeat(auto-fill, 300px);*/
-		/*align-items: start;*/
-		/*grid-auto-flow: row dense;*/
-		
-		display: flex; flex-direction: column; flex-wrap: wrap;
-		/*align-items: center*/
-	}
-	.controls > *:not(button.show-hide) {
-		width: 300px;
-	}
-	
-	label {
-		user-select: none;
-	}
-	
-	.show-hide {
-		position: absolute;
-		bottom: 100%;
-		left: 0;
+</style>
+
+<style>
+	body {
+		max-height: 100vh;
+		max-width: 100vw;
+		overflow: hidden;
 	}
 </style>
