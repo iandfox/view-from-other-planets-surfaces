@@ -9,28 +9,16 @@
  *
  * @since 2021-07-12
  */
+import { clampAngle, clampAngle180 } from '../Utils/ClampAngle';
 
 class BaseOrbitalBody {
 	
 	constructor(JD = 2459404.5) {
 		this.JD = JD;
+		
+		this.clampAngle = clampAngle;
+		this.clampAngle180 = clampAngle180;
 	}
-	
-	
-	///
-	/// Utils
-	///
-	
-	clampAngle(angleInDegrees) {
-		return ((angleInDegrees % 360) + 360) % 360;
-	}
-	
-	clampAngle180(angleInDegrees) {
-		let a = this.clampAngle(angleInDegrees);
-		if (a > 180) { a -= 360; }
-		return a;
-	}
-	
 	
 	///
 	/// Primary Orbital Elements

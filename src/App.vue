@@ -4,7 +4,7 @@
 		|
 		<router-link to="/sun">Sun</router-link>
 		|
-		<router-link to="/moon">Moon</router-link>
+		<router-link to="/sidereal-time">Sidereal Time</router-link>
 	</div>
 	<router-view/>
 	

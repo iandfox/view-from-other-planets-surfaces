@@ -6,8 +6,8 @@
  */
 import {Moon} from './Moon.class';
 
-const dcos = (angle) => Math.cos(angle * 180 / Math.PI);
-const dsin = (angle) => Math.sin(angle * 180 / Math.PI);
+const dcos = (angle) => Math.cos(angle * Math.PI / 180);
+const dsin = (angle) => Math.sin(angle * Math.PI / 180);
 
 class MoonCoordinates {
 	

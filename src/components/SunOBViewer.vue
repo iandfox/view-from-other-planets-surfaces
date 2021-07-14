@@ -21,27 +21,27 @@
 	></ChartsViewer>
 	
 	<h3>SunOBViewer - 30 days</h3>
-	<ChartsViewer
-		:julian-day-start="2459404.5"
-		:julian-day-end="2459434.5"
-		:julian-day-step="0.01"
-		:charts="charts"
-		:class-instance="sun"
-	></ChartsViewer>
-	
-	<h3>SunOBViewer - 365 days</h3>
-	<ChartsViewer
-		:julian-day-start="2459404.5"
-		:julian-day-end="2459769.5"
-		:julian-day-step="1"
-		:charts="charts"
-		:class-instance="sun"
-	></ChartsViewer>
+	<!--<ChartsViewer-->
+		<!--:julian-day-start="2459404.5"-->
+		<!--:julian-day-end="2459434.5"-->
+		<!--:julian-day-step="0.01"-->
+		<!--:charts="charts"-->
+		<!--:class-instance="sun"-->
+	<!--&gt;</ChartsViewer>-->
+	<!---->
+	<!--<h3>SunOBViewer - 365 days</h3>-->
+	<!--<ChartsViewer-->
+		<!--:julian-day-start="2459404.5"-->
+		<!--:julian-day-end="2459769.5"-->
+		<!--:julian-day-step="1"-->
+		<!--:charts="charts"-->
+		<!--:class-instance="sun"-->
+	<!--&gt;</ChartsViewer>-->
 </template>
 
 <script>
 	import ChartsViewer from './ChartsViewer';
-	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody';
+	import { SunOrbitalBody } from '../calculations/OrbitalBodies/SunOrbitalBody.class.js';
 	
 	export default {
 		name: 'SunOBViewer',

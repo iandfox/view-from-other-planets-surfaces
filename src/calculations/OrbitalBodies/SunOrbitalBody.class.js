@@ -3,10 +3,10 @@
  *
  * @since 2021-07-13
  */
-import {BaseOrbitalBody} from './BaseOrbitalBody';
+import {BaseOrbitalBody} from './BaseOrbitalBody.class.js';
 
-const dcos = (angle) => Math.cos(angle * 180 / Math.PI);
-const dsin = (angle) => Math.sin(angle * 180 / Math.PI);
+const dcos = (angle) => Math.cos(angle * Math.PI / 180);
+const dsin = (angle) => Math.sin(angle * Math.PI / 180);
 
 class SunOrbitalBody extends BaseOrbitalBody {
 	
