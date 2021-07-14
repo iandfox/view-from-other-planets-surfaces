@@ -20,22 +20,22 @@
 	></ChartsViewer>
 	
 	<h3>MoonOrbitalBodySandbox - 30 days</h3>
-	<!--<ChartsViewer-->
-		<!--:julian-day-start="2459404.5"-->
-		<!--:julian-day-end="2459434.5"-->
-		<!--:julian-day-step="0.01"-->
-		<!--:charts="charts"-->
-		<!--:class-instance="moon"-->
-	<!--&gt;</ChartsViewer>-->
-	<!---->
-	<!--<h3>MoonOrbitalBodySandbox - 365 days</h3>-->
-	<!--<ChartsViewer-->
-		<!--:julian-day-start="2459404.5"-->
-		<!--:julian-day-end="2459769.5"-->
-		<!--:julian-day-step="1"-->
-		<!--:charts="charts"-->
-		<!--:class-instance="moon"-->
-	<!--&gt;</ChartsViewer>-->
+	<ChartsViewer
+		:julian-day-start="2459404.5"
+		:julian-day-end="2459434.5"
+		:julian-day-step="0.1"
+		:charts="charts"
+		:class-instance="moon"
+	></ChartsViewer>
+	
+	<h3>MoonOrbitalBodySandbox - 365 days</h3>
+	<ChartsViewer
+		:julian-day-start="2459404.5"
+		:julian-day-end="2459769.5"
+		:julian-day-step="1"
+		:charts="charts"
+		:class-instance="moon"
+	></ChartsViewer>
 </template>
 
 <script>

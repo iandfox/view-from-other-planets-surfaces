@@ -8,12 +8,22 @@
 -->
 
 <template>
+	<h2>Sunbody once told me</h2>
 	<ChartsViewer
 		:julian-day-start="2459404.5"
 		:julian-day-end="2459405.5"
 		:julian-day-step="0.001"
 		:charts="charts"
-		:class-instance="azimuthal"
+		:class-instance="azimuthal_sun"
+	></ChartsViewer>
+	
+	<h2>We could all use a little mooooon</h2>
+	<ChartsViewer
+		:julian-day-start="2459404.5"
+		:julian-day-end="2459405.5"
+		:julian-day-step="0.001"
+		:charts="charts"
+		:class-instance="azimuthal_moon"
 	></ChartsViewer>
 </template>
 
@@ -22,6 +32,7 @@
 	import ChartsViewer from '../utils/ChartsViewer';
 	import {SiderealTime} from '../../calculations/Utils/SiderealTime.class';
 	import {AzimuthalCoordinates} from '../../calculations/Utils/AzimuthalCoordinates.class';
+	import {MoonOrbitalBody} from '../../calculations/OrbitalBodies/MoonOrbitalBody.class';
 	
 	export default {
 		name: 'AltAzSandbox',
@@ -45,11 +56,13 @@
 		
 		setup() {
 			const sun = new SunOrbitalBody(2459404.5);
-			// const moon = // TODO
-			const azimuthal = new AzimuthalCoordinates(sun, sun);
+			const moon = new MoonOrbitalBody(2459404.5);
+			const azimuthal_sun = new AzimuthalCoordinates(sun, sun);
+			const azimuthal_moon = new AzimuthalCoordinates(moon, sun);
 			
 			return {
-				azimuthal,
+				azimuthal_sun,
+				azimuthal_moon,
 				sun,
 			}
 		}
