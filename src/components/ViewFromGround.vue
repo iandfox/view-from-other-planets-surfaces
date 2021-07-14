@@ -81,21 +81,41 @@
 		setup() {
 			const JD   = ref(2459404.5); //ref(2459404.5);
 			const moons = [
+				// Earth's moon
+				new MoonOrbitalBody(
+					JD.value,
+					{
+						N: [125.1228, -0.0529538083],
+						i: [5.1454, 0],
+						w: [318.0634, 0.1643573223],
+						a: [60.2666, 0], // in Earth radii
+						e: [0.054900, 0],
+						M: [115.3654, 13.0649929509],
+					},
+					{
+						color: 'grey',
+						radius: 28,
+					}
+				),
+				
+				// Gomor
 				new MoonOrbitalBody(
 					JD.value,
 					{
 						N: [125.1228, -0.0529538083],
 						i: [5.1454, 1],
 						w: [8.0634, 0.1643573223],
-						a: [60.2666, 0], // in Earth radii
+						a: [1.2666, 0], // in Earth radii
 						e: [0.054900, 0],
 						M: [300.3654, 13.0649929509],
 					},
 					{
 						color: 'teal',
-						radius: 28,
+						radius: 40,
 					}
 				),
+				
+				// F'an
 				new MoonOrbitalBody(
 					JD.value,
 					{
@@ -104,7 +124,7 @@
 						w: [318.0634, 0.1643573223],
 						a: [60.2666, 0], // in Earth radii
 						e: [0.054900, 0],
-						M: [0.3654, 13.0649929509],
+						M: [0.3654, 53.0649929509],
 					},
 					{
 						color: 'orange',
