@@ -41,6 +41,7 @@
 			return {
 				charts: [
 					{x: 'time', y: 'JD', title: 'Julian Day (sanity check)', description: '', closestJDCoords: {x: 0, y: 0}},
+					{x: 'alt_az.alt_deg', y: 'alt_az.az_deg', title: '', description: '', closestJDCoords: {x: 0, y: 0}},
 					{x: 'time', y: 'HA_deg', title: 'HA_deg', description: '', closestJDCoords: {x: 0, y: 0}},
 					{x: 'time', y: 'alt_az.x', title: 'alt_az.x', description: '', closestJDCoords: {x: 0, y: 0}},
 					{x: 'time', y: 'alt_az.y', title: 'alt_az.y', description: '', closestJDCoords: {x: 0, y: 0}},

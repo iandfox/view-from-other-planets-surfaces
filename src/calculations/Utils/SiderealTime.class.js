@@ -32,7 +32,7 @@ class SiderealTime {
 	 * @return {number}
 	 */
 	get GMST_deg() {
-		return this.clampAngle180(99.5 + (1.0027379093 * 360 * this.sun.JD));
+		return clampAngle180(99.5 + (1.0027379093 * 360 * this.sun.JD));
 	}
 	
 	
@@ -50,7 +50,7 @@ class SiderealTime {
 	 * @return {number}
 	 */
 	get LST_deg() {
-		return this.clampAngle180(this.GMST_deg + this.localLongitude_deg);
+		return clampAngle180(this.GMST_deg + this.localLongitude_deg);
 	}
 }
 

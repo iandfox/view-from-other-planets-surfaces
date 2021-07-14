@@ -16,6 +16,17 @@
 </template>
 
 <style lang="less">
+	* {
+		&, &::before, &::after {
+			box-sizing: border-box;
+		}
+	}
+	
+	body {
+		background: #010101;
+		color: #ccc;
+	}
+	
 	#app {
 		font-family: Avenir, Helvetica, Arial, sans-serif;
 		-webkit-font-smoothing: antialiased;
