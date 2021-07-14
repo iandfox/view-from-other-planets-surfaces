@@ -1,9 +1,9 @@
 <!--
- - Vue Component: SunOBViewer
+ - Vue Component: SunOrbitalBodySandbox
  -     SolarCoordinates visualization
  -     
  -     Example usage:
- -         <SunOBViewer></SunOBViewer>
+ -         <SunOrbitalBodySandbox></SunOrbitalBodySandbox>
  - 
  - @created 2021-07-13
  - 
@@ -11,7 +11,7 @@
 -->
 
 <template>
-	<h3>SunOBViewer - 1 day</h3>
+	<h3>SunOrbitalBodySandbox - 1 day</h3>
 	<ChartsViewer
 		:julian-day-start="2459404.5"
 		:julian-day-end="2459405.5"
@@ -20,7 +20,7 @@
 		:class-instance="sun"
 	></ChartsViewer>
 	
-	<h3>SunOBViewer - 30 days</h3>
+	<h3>SunOrbitalBodySandbox - 30 days</h3>
 	<!--<ChartsViewer-->
 		<!--:julian-day-start="2459404.5"-->
 		<!--:julian-day-end="2459434.5"-->
@@ -29,7 +29,7 @@
 		<!--:class-instance="sun"-->
 	<!--&gt;</ChartsViewer>-->
 	<!---->
-	<!--<h3>SunOBViewer - 365 days</h3>-->
+	<!--<h3>SunOrbitalBodySandbox - 365 days</h3>-->
 	<!--<ChartsViewer-->
 		<!--:julian-day-start="2459404.5"-->
 		<!--:julian-day-end="2459769.5"-->
@@ -40,11 +40,11 @@
 </template>
 
 <script>
-	import ChartsViewer from './ChartsViewer';
-	import { SunOrbitalBody } from '../calculations/OrbitalBodies/SunOrbitalBody.class.js';
+	import ChartsViewer from '../utils/ChartsViewer';
+	import { SunOrbitalBody } from '../../calculations/OrbitalBodies/SunOrbitalBody.class.js';
 	
 	export default {
-		name: 'SunOBViewer',
+		name: 'SunOrbitalBodySandbox',
 		components: {ChartsViewer},
 		
 		data() {

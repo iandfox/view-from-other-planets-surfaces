@@ -125,36 +125,24 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
-	get v() {
+	get v_and_r() {
 		const e = this.e,
 			E = this.E,
 			x_v = Math.cos(E) - e,
 			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
-		
-		return Math.atan2(y_v, x_v);
+		return {
+			v: Math.atan2(y_v, x_v),
+			r: Math.sqrt(Math.pow(x_v, 2) + Math.pow(y_v, 2)),
+		}
 	}
-	
+	get v() { return this.v_and_r.v }
+	get r() { return this.v_and_r.r }
 	/**
 	 * @see v
 	 * @return {number}
 	 */
 	get v_deg() {
 		return this.clampAngle(this.v * 180 / Math.PI);
-	}
-	
-	/**
-	 * distance to parent body
-	 *
-	 * @since 2021-07-12
-	 * @return {number}
-	 */
-	get r() {
-		const e = this.e,
-			E = this.E,
-			x_v = Math.cos(E) - e,
-			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
-		
-		return Math.sqrt(Math.pow(x_v, 2) + Math.pow(y_v, 2));
 	}
 	
 	

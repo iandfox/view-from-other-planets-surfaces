@@ -9,13 +9,13 @@
 
 <template>
 	<h1>Here comes the sun</h1>
-	<SunOBViewer></SunOBViewer>
+	<SunOrbitalBodySandbox></SunOrbitalBodySandbox>
 </template>
 
 <script>
-	import SunOBViewer from '../components/SunOBViewer';
+	import SunOrbitalBodySandbox from '../../components/sandbox-views/SunOrbitalBodySandbox';
 	export default {
 		name: 'SunView',
-		components: {SunOBViewer},
+		components: {SunOrbitalBodySandbox},
 	}
 </script>

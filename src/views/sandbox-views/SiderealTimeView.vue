@@ -9,13 +9,13 @@
 
 <template>
 	<h1>Time keeps on slippin' slippin' slippin'</h1>
-	<SiderealTimeViewer></SiderealTimeViewer>
+	<SiderealTimeSandbox></SiderealTimeSandbox>
 </template>
 
 <script>
-	import SiderealTimeViewer from '../components/SiderealTimeViewer';
+	import SiderealTimeSandbox from '../../components/sandbox-views/SiderealTimeSandbox';
 	export default {
 		name: 'SiderealViewer',
-		components: {SiderealTimeViewer},
+		components: {SiderealTimeSandbox},
 	}
 </script>

@@ -1,7 +1,8 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 import Home from '../views/Home.vue'
-import SunView from '../views/SunView.vue'
-import SiderealTimeView from '../views/SiderealTimeView';
+import SunView from '../views/sandbox-views/SunView.vue'
+import SiderealTimeView from '../views/sandbox-views/SiderealTimeView';
+import AltAzView from '../views/sandbox-views/AltAzView';
 
 const routes = [
 	{
@@ -20,11 +21,15 @@ const routes = [
 		// 	return import(/* webpackChunkName: "about" */ '../views/About.vue')
 		// }
 	},
-	
 	{
 		path: '/sidereal-time',
 		name: 'SiderealTimeView',
 		component: SiderealTimeView,
+	},
+	{
+		path: '/azimuthal',
+		name: 'AltAzView',
+		component: AltAzView,
 	},
 ];
 

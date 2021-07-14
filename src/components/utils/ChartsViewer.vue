@@ -90,7 +90,7 @@
 <script>
 	import { toRaw } from 'vue';
 	import Timer from './Timer';
-	import {ChartDrawer} from '../calculations/ChartDrawer.class';
+	import {ChartDrawer} from '../../calculations/ChartDrawer.class';
 	export default {
 		name: 'ChartsViewer',
 		components: {Timer},

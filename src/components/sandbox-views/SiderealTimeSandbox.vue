@@ -1,8 +1,8 @@
 <!--
- - Vue Component: SiderealTimeViewer
+ - Vue Component: SiderealTimeSandbox
  -
  -     Example usage:
- -         <SiderealTimeViewer></SiderealTimeViewer>
+ -         <SiderealTimeSandbox></SiderealTimeSandbox>
  -
  - @created 2021-07-13
 -->
@@ -18,12 +18,12 @@
 </template>
 
 <script>
-	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
-	import ChartsViewer from './ChartsViewer';
-	import {SiderealTime} from '../calculations/Utils/SiderealTime.class';
+	import {SunOrbitalBody} from '../../calculations/OrbitalBodies/SunOrbitalBody.class';
+	import ChartsViewer from '../utils/ChartsViewer';
+	import {SiderealTime} from '../../calculations/Utils/SiderealTime.class';
 	
 	export default {
-		name: 'SiderealTimeViewer',
+		name: 'SiderealTimeSandbox',
 		components: { ChartsViewer},
 		data() {
 			return {
@@ -31,7 +31,6 @@
 					{x: 'time', y: 'JD', title: 'Julian Day (sanity check)', description: '', closestJDCoords: {x: 0, y: 0}},
 					{x: 'time', y: 'GMST_deg', title: 'GMST_deg', description: '', closestJDCoords: {x: 0, y: 0}},
 					{x: 'time', y: 'LST_deg', title: 'LST_deg', description: '', closestJDCoords: {x: 0, y: 0}},
-					{x: 'time', y: 'HA_deg', title: 'HA_deg', description: '', closestJDCoords: {x: 0, y: 0}},
 				]
 			};
 		},
@@ -47,7 +46,3 @@
 		}
 	}
 </script>
-
-<style scoped>
-
-</style>

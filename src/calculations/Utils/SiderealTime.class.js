@@ -6,7 +6,6 @@
  */
 import {SunOrbitalBody} from '../OrbitalBodies/SunOrbitalBody.class';
 import {clampAngle, clampAngle180} from './ClampAngle';
-import {HA_deg} from './AzimuthalCoordinates';
 
 class SiderealTime {
 	
@@ -20,15 +19,7 @@ class SiderealTime {
 		
 		this.clampAngle = clampAngle;
 		this.clampAngle180 = clampAngle180;
-		
-		
-		// TODO 2021-07-13: probably remove this reference... I just want to plot it quickly without creating yet another view.
-		this._HA_deg = HA_deg;
 	}
-	
-	// TODO 2021-07-13: probably remove this reference... I just want to plot it quickly without creating yet another view.
-	get HA_deg() { return this._HA_deg(this.LST_deg, this.sun.RA_deg) }
-	get HA() { return this.HA_deg }
 	
 	
 	get JD()    { return this.sun.JD }

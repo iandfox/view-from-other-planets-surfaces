@@ -22,7 +22,7 @@
 
 <script>
 	import {ObserverCoordinates} from '../calculations/ObserverCoordinates.class';
-	import ChartsViewer from './ChartsViewer';
+	import ChartsViewer from './utils/ChartsViewer';
 	import {Moon} from '../calculations/Moon.class';
 	import {SolarCoordinates} from '../calculations/SC.class';
 	
