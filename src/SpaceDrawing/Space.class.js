@@ -11,10 +11,20 @@ import {AzimuthalCoordinates} from '../calculations/Utils/AzimuthalCoordinates.c
 
 class Space {
 	
-	constructor(canvas, starsCanvas, viewport, moon, sun, JD = 2459404.5) {
-		this.canvas = canvas;
-		this.ctx = canvas.getContext('2d');
+	constructor(
+		starsCanvas,
+		spaceCanvas,
+		groundCanvas,
+		viewport,
+		sun,
+		moons = [],
+		planets = [],
+		JD = 2459404.5
+	) {
+		this.canvas = spaceCanvas;
+		this.ctx = spaceCanvas.getContext('2d');
 		this.starsCanvas = starsCanvas;
+		this.groundCanvas = groundCanvas;
 		this.viewport = viewport;
 		this._JD = JD;
 		
@@ -22,21 +32,30 @@ class Space {
 		sun.JD = JD;
 		this.sun = sun;
 		
-		moon.azi = new AzimuthalCoordinates(moon, sun);
-		moon.JD = JD;
-		this.moon = moon;
+		moons = moons.map((moon) => {
+			moon.azi = new AzimuthalCoordinates(moon, sun);
+			moon.JD = JD;
+			return moon;
+		});
+		this.moons = moons;
+		
+		planets = planets.map((planet) => {
+			// TODO 2021-07-14: might need to change this, to represent planet vs moon diff
+			planet.azi = new AzimuthalCoordinates(planet, sun);
+			planet.JD = JD;
+			return planet;
+		});
+		this.planets = planets;
 		
 		this.stars = [];
 		
-		// why the fuck aren't canvases going transparent when i clear them? what the fuck?!
-		
-		// TODO: make the stars rotate
+		// TODO 2021-07-13: make the stars rotate
 	}
 	
 	get JD() { return this._JD }
 	set JD(jd) {
 		this._JD = jd;
-		([this.sun, this.moon]).forEach((ob) => {
+		([this.sun, ...this.moons, ...this.planets]).forEach((ob) => {
 			ob.JD = jd;
 		});
 	}
@@ -46,13 +65,33 @@ class Space {
 	 */
 	draw() {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.drawSun();
+		this.drawHorizon();
 		this.drawSky();
+		this.drawSun();
 		this.drawPlanets();
 		this.drawMoons();
-		this.drawHorizon();
 		this.drawCompass();
+		
+		this.drawDebug();
 	}
+	
+	
+	/**
+	 * @since 2021-07-14
+	 *
+	 * @param canvas
+	 * @param ctx
+	 */
+	drawDebug(canvas = this.canvas, ctx = this.ctx) {
+		let debug_y_s = this.viewport.top - 5,
+			debug_x_s = this.viewport.left + 5;
+		ctx.fillStyle = 'white';
+		ctx.textAlign = 'left';
+		ctx.textBaseline = 'top';
+		ctx.font = '30px serif';
+		// this.text(debug_x_s, debug_y_s, this.sun.azi.alt_az.alt_deg, 'white', canvas, ctx);
+	}
+	
 	
 	/**
 	 * @since 2021-07-13
@@ -109,7 +148,8 @@ class Space {
 	drawSun(canvas = this.canvas, ctx = this.ctx) {
 		const sun = this.sun;
 		const { alt_deg, az_deg } = sun.azi.alt_az;
-		this.circle(az_deg, alt_deg, 50, 'yellow', canvas, ctx);
+		// TODO 2021-07-14: allow defn for sun radius, sun color
+		this.circle(az_deg, alt_deg, 30, 'yellow', canvas, ctx);
 	}
 	
 	
@@ -120,7 +160,12 @@ class Space {
 	 * @param ctx
 	 */
 	drawSky(canvas = this.canvas, ctx = this.ctx) {
-		//
+		const sunAlt = this.sun.azi.alt_az.alt_deg;
+		if (sunAlt >= -30) {
+			ctx.globalAlpha = Math.min(1, (sunAlt + 30) / 60);
+			this.rect(this.viewport.left, 0, this.viewport.right, 90, 'blue', canvas, ctx);
+			ctx.globalAlpha = 1;
+		}
 	}
 	
 	
@@ -131,7 +176,7 @@ class Space {
 	 * @param ctx
 	 */
 	drawPlanets(canvas = this.canvas, ctx = this.ctx) {
-		//
+		// TODO
 	}
 	
 	
@@ -142,10 +187,11 @@ class Space {
 	 * @param ctx
 	 */
 	drawMoons(canvas = this.canvas, ctx = this.ctx) {
-		// TODO: allow multiple moons
-		const moon = this.moon;
-		const { alt_deg, az_deg } = moon.azi.alt_az;
-		this.circle(az_deg, alt_deg, 48, 'grey', canvas, ctx);
+		this.moons.forEach((moon) => {
+			const { alt_deg, az_deg } = moon.azi.alt_az;
+			// TODO 2021-07-14: allow defn for moon radius, moon color
+			this.circle(az_deg, alt_deg, 28, 'grey', canvas, ctx);
+		});
 	}
 	
 	
@@ -156,13 +202,15 @@ class Space {
 	 * @param ctx
 	 */
 	drawHorizon(canvas = this.canvas, ctx = this.ctx) {
-		// const c = (x, y) => this.toCanvas(x, y, canvas, ctx);
-		//
-		// const topLeft = c(this.)
-		//
-		// this.ctx.beginPath();
-		//
-		// this.ctx.moveTo()
+		this.rect(
+			this.viewport.left,
+			0,
+			this.viewport.right,
+			this.viewport.bottom,
+			'rgba(0, 200, 0, 0.3)',
+			canvas,
+			ctx
+		);
 	}
 	
 	
@@ -173,7 +221,9 @@ class Space {
 	 * @param ctx
 	 */
 	drawCompass(canvas = this.canvas, ctx = this.ctx) {
-		//
+		for (let x = -180; x <= 180; x += 10) { // TODO: only draw in viewport
+			this.tickMark(x, 0, x, 'yellow', 1, 6, true, canvas, ctx);
+		}
 	}
 	
 	
@@ -193,13 +243,99 @@ class Space {
 	 * @param canvas
 	 * @param ctx
 	 */
-	circle(x_s, y_s, r, color, canvas = this.canvas, ctx = this.ctx) {
-		const {x, y} = this.toCanvas(x_s, y_s);
+	circle(x_s, y_s, r, color = 'white', canvas = this.canvas, ctx = this.ctx) {
+		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
 		ctx.fillStyle = color;
 		ctx.beginPath();
 		ctx.moveTo(x, y);
 		ctx.arc(x, y, r, 0, 2 * Math.PI);
 		ctx.fill();
+	}
+	
+	
+	/**
+	 * @since 2021-07-14
+	 *
+	 * @param x1_s
+	 * @param y1_s
+	 * @param x2_s
+	 * @param y2_s
+	 * @param color
+	 * @param canvas
+	 * @param ctx
+	 */
+	rect(x1_s, y1_s, x2_s, y2_s, color = 'white', canvas = this.canvas, ctx = this.ctx) {
+		const {x, y} = this.toCanvas(x1_s, y1_s, canvas, ctx);
+		const {x: x2, y: y2} = this.toCanvas(x2_s, y2_s, canvas, ctx);
+		const w = x2 - x, h = y2 - y;
+		ctx.fillStyle = color;
+		ctx.fillRect(x, y, w, h);
+	}
+	
+	
+	/**
+	 * @since 2021-07-14
+	 *
+	 * @param x1_s
+	 * @param y1_s
+	 * @param x2_s
+	 * @param y2_s
+	 * @param color
+	 * @param lineWidth
+	 * @param canvas
+	 * @param ctx
+	 */
+	line(x1_s, y1_s, x2_s, y2_s, color = 'white', lineWidth = 1, canvas = this.canvas, ctx = this.ctx) {
+		const {x: x1, y: y1} = this.toCanvas(x1_s, y1_s, canvas, ctx);
+		const {x: x2, y: y2} = this.toCanvas(x2_s, y2_s, canvas, ctx);
+		ctx.strokeStyle = color;
+		ctx.strokeWidth = lineWidth;
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
+		ctx.stroke();
+	}
+	
+	
+	/**
+	 * @since 2021-07-14
+	 *
+	 * @param x_s
+	 * @param y_s
+	 * @param label
+	 * @param color
+	 * @param lineWidth
+	 * @param tickLength
+	 * @param isVertical
+	 * @param canvas
+	 * @param ctx
+	 */
+	tickMark(x_s, y_s, label = x_s, color = 'white', lineWidth = 1, tickLength = 4, isVertical = true, canvas = this.canvas, ctx = this.ctx) {
+		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
+		const halfLength_s = 0.5 * tickLength;
+		ctx.fillStyle = color;
+		ctx.font = '13px serif';
+		
+		// convert to canvas coords
+		let { x: halfLength } = this.toCanvas(x_s + halfLength_s, 0);
+		halfLength -= x;
+		
+		if (isVertical) {
+			this.line(x_s, y_s - halfLength_s, x_s, y_s + halfLength_s, color, lineWidth, canvas, ctx);
+			ctx.textBaseline = 'top';
+			ctx.textAlign = 'center';
+			ctx.fillText(label, x, y - 2 * halfLength);
+		} else {
+			this.line(x_s - halfLength_s, y_s, x_s + halfLength_s, y_s, color, lineWidth, canvas, ctx);
+			ctx.fillText(label, x, y);
+		}
+	}
+	
+	
+	text(x_s, y_s, label = x_s, color = 'white', canvas = this.canvas, ctx = this.ctx) {
+		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
+		ctx.fillStyle = color;
+		ctx.fillText(label, x, y);
 	}
 	
 	
@@ -213,8 +349,15 @@ class Space {
 	 * @return {{x: number, y: number}}
 	 */
 	toCanvas(x_s, y_s, canvas = this.canvas, ctx = this.ctx) {
-		const scl_x = (x_s - this.viewport.left) / (this.viewport.right - this.viewport.left),
-			scl_y = (y_s - this.viewport.bottom) / (this.viewport.top - this.viewport.bottom);
+		const hor = this.viewport.right - this.viewport.left,
+			ver = this.viewport.top - this.viewport.bottom;
+		if (hor === 0 || ver === 0) {
+			console.warn('Bad viewport given. Sending (0, 0)')
+			return {x: 0, y: 0};
+		}
+		
+		const scl_x = (x_s - this.viewport.left) / hor,
+			scl_y = (y_s - this.viewport.bottom) / ver;
 		return {
 			x: scl_x * this.canvas.width,
 			y: (1 - scl_y) * this.canvas.height

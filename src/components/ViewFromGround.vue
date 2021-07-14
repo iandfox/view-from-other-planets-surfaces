@@ -27,6 +27,7 @@
 	<div class="space">
 		<canvas width="1600" height="800" id="stars" ref="stars"></canvas>
 		<canvas width="1600" height="800" id="space" ref="space"></canvas>
+		<canvas width="1600" height="800" id="ground" ref="ground"></canvas>
 	</div>
 </template>
 
@@ -53,8 +54,8 @@
 				
 				// TODO: limit the viewport and be able to drag it around
 				viewport: {
-					bottom: -180,
-					top:     180,
+					bottom: -90,
+					top:     90,
 					left:   -180,
 					right:   180,
 				},
@@ -83,11 +84,13 @@
 		
 		mounted() {
 			this.space = new Space(
-				document.getElementById('space'),
 				document.getElementById('stars'),
+				document.getElementById('space'),
+				document.getElementById('ground'),
 				this.viewport,
-				toRaw(this.moon),
-				toRaw(this.sun)
+				toRaw(this.sun),
+				[toRaw(this.moon)],
+				[] // planets
 			);
 			this.space.drawBackground(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
 			this.space.drawStars(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
@@ -152,6 +155,9 @@
 	}
 	#space {
 		z-index: 20;
+	}
+	#ground {
+		z-index: 30
 	}
 	
 	.controls {
