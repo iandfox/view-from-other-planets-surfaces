@@ -81,7 +81,21 @@
 		setup() {
 			const JD   = ref(2459404.5); //ref(2459404.5);
 			const moons = [
-				new MoonOrbitalBody(JD.value),
+				new MoonOrbitalBody(
+					JD.value,
+					{
+						N: [125.1228, -0.0529538083],
+						i: [5.1454, 1],
+						w: [8.0634, 0.1643573223],
+						a: [60.2666, 0], // in Earth radii
+						e: [0.054900, 0],
+						M: [300.3654, 13.0649929509],
+					},
+					{
+						color: 'teal',
+						radius: 28,
+					}
+				),
 				new MoonOrbitalBody(
 					JD.value,
 					{
@@ -93,8 +107,8 @@
 						M: [0.3654, 13.0649929509],
 					},
 					{
-						color: '',
-						radius: 5,
+						color: 'orange',
+						radius: 10,
 					}
 				),
 			];

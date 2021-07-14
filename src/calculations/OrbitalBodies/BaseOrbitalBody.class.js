@@ -33,6 +33,8 @@ class BaseOrbitalBody {
 		
 		this.params = {N, i, w, a, e, M};
 		this.ecl_param = ecl_param;
+		this.color = color;
+		this.radius = radius;
 		
 		this.clampAngle = clampAngle;
 		this.clampAngle180 = clampAngle180;
