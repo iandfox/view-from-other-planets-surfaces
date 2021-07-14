@@ -15,11 +15,15 @@
 		<InputRange
 			v-model="JD"
 			label="JD"
-			:min="0"
-			:max="365"
+			:min="2458800"
+			:max="2459900"
 			:step="autoRate"
 			:fraction-digits="4"
 		></InputRange>
+		<InputJulianDate
+			v-model="JD"
+		></InputJulianDate>
+		
 		
 		<div style="font-size: 0.8em;">
 			<div>
@@ -143,10 +147,11 @@
 	import { ref } from 'vue';
 	import InputRange from './fields/InputRange';
 	import ChartsViewer from './utils/ChartsViewer';
+	import InputJulianDate from './fields/InputJulianDate';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {ChartsViewer, InputRange},
+		components: {InputJulianDate, ChartsViewer, InputRange},
 		
 		data() {
 			return {
@@ -186,7 +191,7 @@
 		},
 		
 		setup() {
-			const JD   = ref(0); //ref(2459404.5);
+			const JD   = ref(2459404.5); //ref(2459404.5);
 			const moons = [
 				new MoonOrbitalBody(JD.value),
 				new MoonOrbitalBody(
@@ -200,7 +205,8 @@
 						M: [0.3654, 13.0649929509],
 					},
 					{
-						color: ''
+						color: '',
+						radius: 5,
 					}
 				),
 			];
@@ -248,7 +254,8 @@
 		
 		watch: {
 			JD() {
-				this.space.JD = parseFloat(this.JD);
+				const jd = parseFloat(this.JD);
+				this.space.JD = jd;
 				this.draw();
 			}
 		},
@@ -364,10 +371,6 @@
 	}
 	.controls > *:not(button.show-hide) {
 		width: 300px;
-	}
-	
-	input, code {
-		color: white;
 	}
 	
 	label {

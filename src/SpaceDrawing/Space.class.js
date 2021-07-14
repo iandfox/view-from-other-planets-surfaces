@@ -195,8 +195,7 @@ class Space {
 	drawMoons(canvas = this.canvas, ctx = this.ctx) {
 		this.moons.forEach((moon) => {
 			const { alt_deg, az_deg } = moon.azi.alt_az;
-			// TODO 2021-07-14: allow defn for moon radius, moon color
-			this.circle(az_deg, alt_deg, 28, 'grey', canvas, ctx);
+			this.circle(az_deg, alt_deg, moon.radius, moon.color, canvas, ctx);
 		});
 	}
 	

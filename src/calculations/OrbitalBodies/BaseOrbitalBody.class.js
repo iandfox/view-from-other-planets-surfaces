@@ -26,7 +26,7 @@ class BaseOrbitalBody {
 		{
 			ecl_param = [23.4393, -3.563E-7],
 			color = 'white',
-			radius = 5,
+			radius = 30,
 		} = {}
 	) {
 		this.JD = JD;
