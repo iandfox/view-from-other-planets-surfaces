@@ -227,10 +227,30 @@ class Space {
 	 * @param ctx
 	 */
 	drawCompass(canvas = this.canvas, ctx = this.ctx) {
-		const startTick = Math.max(10 * Math.floor(this.viewport.left / 10), -180);
-		const endTick = Math.max(10 * Math.ceil(this.viewport.left / 10), 180);
-		for (let x = startTick; x <= endTick; x += 10) { // TODO: only draw in viewport
-			this.tickMark(x, 0, x, 'yellow', 1, 6, true, canvas, ctx);
+		if (this.viewport.bottom <= 0 && this.viewport.top >= 0) {
+			// Draw the azimuth-axis
+			this.line(this.viewport.left, 0, this.viewport.right, 0, 'yellow', 1, canvas, ctx);
+			
+			const leftTick = Math.max(10 * Math.floor(this.viewport.left / 10), -180);
+			const rightTick = Math.max(10 * Math.ceil(this.viewport.left / 10), 180);
+			for (let x = leftTick; x <= rightTick; x += 10) {
+				this.tickMark(x, 0, x, 'yellow', 1, 4, true, canvas, ctx);
+			}
+		}
+		
+		if (this.viewport.left <= 0 && this.viewport.right >= 0) {
+			// Draw the altitude-axis, leaving a gap in the middle
+			this.line(0, this.viewport.bottom, 0, -8, 'yellow', 1, canvas, ctx);
+			this.line(0, 8, 0, this.viewport.top, 'yellow', 1, canvas, ctx);
+			
+			const bottomTick = Math.max(10 * Math.floor(this.viewport.bottom / 10), -90);
+			const topTick = Math.max(10 * Math.ceil(this.viewport.top / 10), 90);
+			for (let y = bottomTick; y <= topTick; y += 10) {
+				if (Math.abs(y) < 0.0001 /* i.e., = 0 */) {
+					continue;
+				}
+				this.tickMark(0, y, y, 'yellow', 1, 4, false, canvas, ctx);
+			}
 		}
 	}
 	
@@ -330,12 +350,14 @@ class Space {
 		
 		if (isVertical) {
 			this.line(x_s, y_s - halfLength_s, x_s, y_s + halfLength_s, color, lineWidth, canvas, ctx);
-			ctx.textBaseline = 'top';
+			ctx.textBaseline = 'bottom';
 			ctx.textAlign = 'center';
-			ctx.fillText(label, x, y - 2 * halfLength);
+			ctx.fillText(label, x, y - halfLength);
 		} else {
 			this.line(x_s - halfLength_s, y_s, x_s + halfLength_s, y_s, color, lineWidth, canvas, ctx);
-			ctx.fillText(label, x, y);
+			ctx.textBaseline = 'middle';
+			ctx.textAlign = 'left';
+			ctx.fillText(label, x + 1.5 * halfLength, y);
 		}
 	}
 	
