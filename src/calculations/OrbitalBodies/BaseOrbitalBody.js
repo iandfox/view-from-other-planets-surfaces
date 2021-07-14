@@ -25,6 +25,12 @@ class BaseOrbitalBody {
 		return ((angleInDegrees % 360) + 360) % 360;
 	}
 	
+	clampAngle180(angleInDegrees) {
+		let a = this.clampAngle(angleInDegrees);
+		if (a > 180) { a -= 360; }
+		return a;
+	}
+	
 	
 	///
 	/// Primary Orbital Elements
@@ -125,7 +131,7 @@ class BaseOrbitalBody {
 	}
 	
 	/**
-	 * eccentric anomaly
+	 * eccentric anomaly - angular position of body. this is the big mamma jamma.
 	 *
 	 * @since 2021-07-12
 	 * @return {number}
@@ -221,7 +227,7 @@ class BaseOrbitalBody {
 	 * @see RA
 	 * @return {number}
 	 */
-	get RA_deg() { return this.clampAngle(this.RA * 180 / Math.PI) }
+	get RA_deg() { return this.clampAngle180(this.RA * 180 / Math.PI) }
 	
 	/**
 	 * Declination
@@ -238,7 +244,7 @@ class BaseOrbitalBody {
 	 * @see Decl
 	 * @return {number}
 	 */
-	get Decl_deg() { return this.clampAngle(this.Decl * 180 / Math.PI) }
+	get Decl_deg() { return this.clampAngle180(this.Decl * 180 / Math.PI) }
 	
 	
 	///

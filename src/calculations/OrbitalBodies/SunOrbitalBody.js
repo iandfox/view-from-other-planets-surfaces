@@ -40,8 +40,6 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	}
 	
 	
-	
-	
 	///
 	/// Orbital params
 	///
@@ -127,13 +125,21 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
-	get v_deg() {
+	get v() {
 		const e = this.e,
-			E_deg = this.E_deg,
-			x_v = dcos(E_deg) - e, // r * cos(v)
-			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * dsin(E_deg); // r * sin(v)
+			E = this.E,
+			x_v = Math.cos(E) - e,
+			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
 		
-		return this.clampAngle((Math.atan2(y_v, x_v) * 180 / Math.PI));
+		return Math.atan2(y_v, x_v);
+	}
+	
+	/**
+	 * @see v
+	 * @return {number}
+	 */
+	get v_deg() {
+		return this.clampAngle(this.v * 180 / Math.PI);
 	}
 	
 	/**
@@ -144,26 +150,67 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 */
 	get r() {
 		const e = this.e,
-			E_deg = this.E_deg,
-			x_v = dcos(E_deg) - e, // r * cos(v)
-			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * dsin(E_deg); // r * sin(v)
+			E = this.E,
+			x_v = Math.cos(E) - e,
+			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
 		
 		return Math.sqrt(Math.pow(x_v, 2) + Math.pow(y_v, 2));
 	}
 	
+	
 	/**
-	 * eccentric anomaly
+	 * E, the eccentric anomaly - angular position of body. this is the big mamma jamma.
+	 *     This is from the other source, not the nice website. it has calculus in it, should be better.
+	 *
+	 * @since 2021-07-12
+	 * @return {number}
+	 */
+	get E() {
+		const M_deg = this.M_deg, e = this.e;
+		const M = M_deg * Math.PI / 180;
+		const sin = Math.sin, cos = Math.cos;
+		
+		let E = M + (e * sin(M));
+		let sanity = 0;
+		while (++sanity > 0) {
+			const dM = M - (E - (e * sin(E)));
+			const dE = dM / (1 - (e * cos(E)));
+			E += dE;
+			if (dE < 0.01) {
+				break;
+			}
+		}
+		
+		return E;
+	}
+	
+	/**
+	 * @see E
+	 * @return {*}
+	 */
+	get E_deg() {
+		return this.clampAngle(this.E * 180 / Math.PI);
+	}
+	
+	/**
+	 * E ---- ALT, unused:
+	 * eccentric anomaly - angular position of body. this is the big mamma jamma.
 	 *
 	 * "Note that the formulae for computing E are not exact; however they're accurate enough here."
 	 *
 	 * @since 2021-07-12
 	 * @return {number}
 	 */
-	get E_deg() {
-		const M_deg = this.M_deg,
-			e = this.e;
-		return this.clampAngle(M_deg + (e * dsin(M_deg) * (1 + e * dcos(M_deg))) * 180 / Math.PI);
-	}
+	// get _E_deg_not_exact() {
+	// 	const M_deg = this.M_deg,
+	// 		e = this.e;
+	//
+	// 	return this.clampAngle(
+	// 		M_deg +
+	// 		((e * dsin(M_deg) * (1 + e * dcos(M_deg)))
+	// 		* 180 / Math.PI)
+	// 	);
+	// }
 	
 	/**
 	 * Right Ascension
@@ -201,10 +248,10 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 */
 	get eclipticCoordinates() {
 		const r = this.r,
-			lonsun_deg = this.lonsun_deg;
+			lonsun = this.lonsun_deg * Math.PI / 180;
 		return {
-			x: r * dcos(lonsun_deg),
-			y: r * dsin(lonsun_deg),
+			x: r * Math.cos(lonsun),
+			y: r * Math.sin(lonsun),
 			z: 0,
 		};
 	}
@@ -217,11 +264,11 @@ class SunOrbitalBody extends BaseOrbitalBody {
 	 */
 	get equatorialCoordinates() {
 		const eclip = this.eclipticCoordinates,
-			ecl_deg = this.ecl_deg;
+			ecl = this.ecl_deg * Math.PI / 180;
 		return {
 			x: eclip.x,
-			y: eclip.y * dcos(ecl_deg),
-			z: eclip.y * dsin(ecl_deg),
+			y: eclip.y * Math.cos(ecl),
+			z: eclip.y * Math.sin(ecl),
 		}
 	}
 }
