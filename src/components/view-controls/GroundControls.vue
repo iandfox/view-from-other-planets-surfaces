@@ -32,7 +32,7 @@
 			></InputRange>
 			
 			<InputJulianDate
-				:model-value="jd"
+				v-model="jd"
 			></InputJulianDate>
 			
 			<div style="font-size: 0.8em;">
@@ -161,6 +161,7 @@
 		
 		emits: [
 			'update:config',
+			'update:jd',
 			'increase:jd',
 			'update:obliquity',
 			'update:lnglat',

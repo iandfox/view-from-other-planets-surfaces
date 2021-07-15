@@ -56,8 +56,8 @@
 					return this.modelValue;
 				},
 				set(newValue) {
-					this.$emit('update:modelValue', this.modelValue);
-					this.helper.JD = this.modelValue;
+					this.$emit('update:modelValue', newValue);
+					this.helper.JD = newValue;
 				}
 			},
 			

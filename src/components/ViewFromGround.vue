@@ -11,7 +11,7 @@
 <template>
 	<GroundControls
 		v-model:config="config"
-		v-bind:jd="JD"
+		v-model:jd="JD"
 		v-bind:sun="sun"
 		v-bind:moons="moons"
 		v-bind:planets="planets"
