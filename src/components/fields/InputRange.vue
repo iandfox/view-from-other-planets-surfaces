@@ -143,11 +143,10 @@
 	.range-wrapper {
 		display: grid;
 		grid-template-areas:
-			" .  label  ."
+			" label  label  label"
 			"min input max"
-			" .   val   . ";
-		grid-template-columns:
-			minmax(75px, fit-content) minmax(200px, 1fr) minmax(75px, fit-content);
+			" val   val   val ";
+		grid-template-columns: 75px 1fr 75px;
 		align-items: center;
 	}
 	.range-wrapper label {

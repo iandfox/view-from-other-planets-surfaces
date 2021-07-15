@@ -2,7 +2,12 @@
  - Vue Component: Planetarium
  -
  -     Example usage:
- -         <Planetarium></Planetarium>
+ -         <Planetarium
+ -             :julian-date="julianDate"
+ -             :viewport="viewport"
+ -             :moons-parameters="moonsParameters"
+ -             :planets-parameters="planetsParameters"
+ -         ></Planetarium>
  -
  - @created 2021-07-15
 -->
@@ -53,16 +58,22 @@
 		</dl>
 		<p v-else><code>space</code> is not yet loaded. <code>space = {{space}}</code></p>
 	</teleport>
+	
+	<teleport to="#debug-params">
+		<h5>Planetarium's Moons Parameters</h5>
+		<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
+	</teleport>
 </template>
 <script>
 	import { onMounted, reactive, ref, watch } from 'vue';
 	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
 	import {Space} from '../SpaceDrawing/Space.class';
 	import useNumberFormat from '../composables/useNumberFormat';
+	import DebugMoonsParameters from './DebugMoonsParameters';
 	
 	export default {
 		name: 'Planetarium',
-		
+		components: {DebugMoonsParameters},
 		props: {
 			julianDate: {
 				type: Number,
@@ -87,6 +98,9 @@
 		data() {
 			return {
 				space: {},
+				
+				// TODO 2021-07-15: delete
+				debug_activeTabIndex: 0,
 			}
 		},
 		

@@ -64,7 +64,7 @@
 				if (this.isAuto) {
 					this.JD = this.JD + this.step;
 				}
-			}, 100);
+			}, 50);
 		},
 		
 		unmounted() {

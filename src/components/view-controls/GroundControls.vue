@@ -6,12 +6,17 @@
  -         <GroundControls
  -             v-model:julian-date="julianDate"
  -             v-model:viewport="viewport"
+ -             v-model:moons-parameters="moonsParameters"
  -         ></GroundControls>
  - 
  - @created 2021-07-14
 -->
 
 <template>
+	<!-- TODO 2021-07-15: delete-->
+	<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
+	
+	
 	<div class="controls-wrapper">
 		<div :class="{controls: true, hide: cfg.areControlsHidden}">
 			<button class="show-hide tiny button" @click="cfg.areControlsHidden = ! cfg.areControlsHidden">Show/Hide Controls</button>
@@ -23,6 +28,13 @@
 			<ControlViewport
 				v-model="viewport"
 			></ControlViewport>
+			
+			<div v-for="(moonParameters, index) in moonsParameters">
+				<ControlMoonParameters
+					v-model:moon-parameters="moonsParameters[index]"
+				></ControlMoonParameters>
+			</div>
+			
 			<!--
 			<div style="font-size: 0.8em;">
 				<div>
@@ -155,9 +167,11 @@
 	import InputJulianDate from '../fields/InputJulianDate';
 	import ControlViewport from './ControlViewport';
 	import useNumberFormat from '../../composables/useNumberFormat';
+	import DebugMoonsParameters from '../DebugMoonsParameters';
+	import ControlMoonParameters from './ControlMoonParameters';
 	export default {
 		name: 'GroundControls',
-		components: {ControlViewport, InputJulianDate, InputRange},
+		components: {ControlMoonParameters, DebugMoonsParameters, ControlViewport, InputJulianDate, InputRange},
 		
 		// TODO 2021-07-15: temp replacement while i'm refactoring. remove and revonfig
 		data() {
@@ -179,7 +193,12 @@
 				type: Object,
 				required: false,
 				default: {top: -1, right: -1, bottom: -1, left: -1},
-			}
+			},
+			moonsParameters: {
+				type: Array,
+				required: false,
+				default: [],
+			},
 		},
 		
 		setup() {

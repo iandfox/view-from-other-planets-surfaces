@@ -28,11 +28,18 @@
 			<!--<dt></dt><dd>{{}}</dd>-->
 		</dl>
 	</div>
+	<teleport to="#debug">
+		<h5>ViewFromGround's Moons Parameters</h5>
+		<div id="debug-params">
+			<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
+		</div>
+	</teleport>
 	
 	
 	<GroundControls
 		v-model:julian-date="julianDate"
 		v-model:viewport="viewport"
+		v-model:moons-parameters="moonsParameters"
 	></GroundControls>
 	
 	<!--v-model:config="config"-->
@@ -55,10 +62,11 @@
 	import GroundControls from './view-controls/GroundControls';
 	import Planetarium from './Planetarium';
 	import useNumberFormat from '../composables/useNumberFormat';
+	import DebugMoonsParameters from './DebugMoonsParameters';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {Planetarium, GroundControls},
+		components: {DebugMoonsParameters, Planetarium, GroundControls},
 		
 		data() {
 			return {
