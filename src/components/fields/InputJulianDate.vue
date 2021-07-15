@@ -15,11 +15,14 @@
 	<div>
 		<label v-if="label">{{label}}</label>
 		<input type="datetime-local" style="width: 34ch;" v-model="datetime">
+		<br>
+		<small><em>{{format(modelValue)}}</em></small>
 	</div>
 </template>
 
 <script>
 	import {JulianDate} from '../../calculations/Utils/JulianDate.class';
+	import useNumberFormat from '../../composables/useNumberFormat';
 	
 	export default {
 		name: 'InputJulianDate',
@@ -36,6 +39,13 @@
 				_datetime: '', // having this helps with reactivity
 				helper: new JulianDate(this.modelValue),
 			};
+		},
+		
+		setup() {
+			const { format } = useNumberFormat();
+			return {
+				format
+			}
 		},
 		
 		mounted() {
@@ -83,7 +93,7 @@
 					const JD = this.helper.fromDate(Y, M, D, H, m);
 					this.$emit('update:modelValue', JD);
 				}
-			}
+			},
 		},
 	}
 </script>

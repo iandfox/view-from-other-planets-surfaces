@@ -9,16 +9,39 @@
 -->
 
 <template>
-	<!--<GroundControls
-		v-model:config="config"
-		v-model:jd="JD"
-		v-bind:sun="sun"
-		v-bind:moons="moons"
-		v-bind:planets="planets"
-		@increase:jd="JD += $event"
-		@update:obliquity="setObliquityOnBodies"
-		@update:lnglat="setLocalLongLat"
-	></GroundControls>-->
+	<!-- TODO 2021-07-15: delete -->
+	<div id="debug">
+		<h5>ViewFromGround Params</h5>
+		<dl>
+			<dt>JD</dt><dd>{{format(julianDate)}}</dd>
+			<dt style="align-self: center">Viewport</dt><dd>
+<pre style="text-align: left; border-left: none;"> _______________
+|       {{viewport.top}}
+| {{viewport.left}}      {{viewport.right}}
+|      {{viewport.bottom}}
+ ---------------
+</pre>
+			</dd>
+			<dt>localLongitude</dt><dd>{{format(localLongitude)}}</dd>
+			<dt>localLatitude</dt><dd>{{format(localLatitude)}}</dd>
+			<!--<dt></dt><dd>{{}}</dd>-->
+			<!--<dt></dt><dd>{{}}</dd>-->
+		</dl>
+	</div>
+	
+	
+	<GroundControls
+		v-model:julian-date="julianDate"
+	></GroundControls>
+	
+	<!--v-model:config="config"-->
+	<!--v-model:jd="JD"-->
+	<!--v-bind:sun="sun"-->
+	<!--v-bind:moons="moons"-->
+	<!--v-bind:planets="planets"-->
+	<!--@increase:jd="JD += $event"-->
+	<!--@update:obliquity="setObliquityOnBodies"-->
+	<!--@update:lnglat="setLocalLongLat"-->
 	
 	<Planetarium
 		:julian-date="julianDate"
@@ -28,12 +51,9 @@
 </template>
 
 <script>
-	import {MoonOrbitalBody} from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
-	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
-	import {Space} from '../SpaceDrawing/Space.class';
-	import {ref} from 'vue';
 	import GroundControls from './view-controls/GroundControls';
 	import Planetarium from './Planetarium';
+	import useNumberFormat from '../composables/useNumberFormat';
 	
 	export default {
 		name: 'ViewFromGround',
@@ -77,14 +97,6 @@
 					}
 				],
 				
-				numberFormat: new Intl.NumberFormat(
-					'en-US',
-					{
-						minimumFractionDigits: 4,
-						maximumFractionDigits: 4
-					}
-				),
-				
 				///
 				/// Config and Interactables
 				///
@@ -98,10 +110,12 @@
 					right:   180,
 				},
 				
+				localLongitude: -111.01908142663117,
+				localLatitude: 32.198840114469995,
+				
 				config: {
 					obliquity: 0,
-					localLongitude: -111.01908142663117,
-					localLatitude: 32.198840114469995,
+					
 					shouldDrawHorizon: true,
 					shouldDrawSky: true,
 					shouldDrawCompass: true,
@@ -111,9 +125,14 @@
 					autoRate: 0.001,
 					
 					intervalIds: [],
-					
-					
 				},
+			}
+		},
+		
+		setup() {
+			const { format } = useNumberFormat();
+			return {
+				format
 			}
 		},
 		
@@ -227,4 +246,32 @@
 		max-width: 100vw;
 		overflow: hidden;
 	}
+	
+	/* TODO 2021-07-15: delete */
+	#debug {
+		background: white;
+		position: fixed;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 300px;
+		z-index: 9999999999;
+		font-size: 12px;
+		overflow: auto
+	}
+	#debug dl {
+		display: grid;
+		grid-template-columns: 100px 1fr;
+		grid-gap: 0;
+	}
+	#debug dl > dt {
+		grid-column: 1;
+		text-align: right;
+	}
+	#debug dl > dd {
+		grid-column: 2;
+		margin: 0;
+	}
+	#debug dl > dt:nth-child(4n+1), #debug dl > dd:nth-child(4n+2) { background: #eee }
+
 </style>

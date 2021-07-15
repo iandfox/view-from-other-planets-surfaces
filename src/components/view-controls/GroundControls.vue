@@ -19,22 +19,13 @@
 
 <template>
 	<div class="controls-wrapper">
-		<div :class="{'controls': true, hide: cfg.areControlsHidden}">
+		<div :class="{controls: true, hide: cfg.areControlsHidden}">
 			<button class="show-hide tiny button" @click="cfg.areControlsHidden = ! cfg.areControlsHidden">Show/Hide Controls</button>
 			
-			<InputRange
-				v-model="jd"
-				label="JD"
-				:min="2458800"
-				:max="2459900"
-				:step="cfg.autoRate"
-				:fraction-digits="4"
-			></InputRange>
-			
 			<InputJulianDate
-				v-model="jd"
+				v-model="julianDate"
 			></InputJulianDate>
-			
+			<!--
 			<div style="font-size: 0.8em;">
 				<div>
 					<span>
@@ -137,70 +128,119 @@
 				</div>
 				<p v-else>Error: couldn't find moonParams[{{moonIndex}}]</p>
 			</div>
+			-->
 		</div>
 	</div>
+	
+	
+	<teleport to="#debug">
+		<h5>GroundControls Params</h5>
+		<p><small>
+			<em><code>[P]</code>: prop</em><br>
+		</small></p>
+		<dl>
+			<dt>JD</dt><dd>[P] {{format(julianDate)}}</dd>
+			<!--<dt style="align-self: center">Viewport</dt><dd><pre style="text-align: left; border-left: none;"> _______________
+|       {{viewport.top}}
+| {{viewport.left}}      {{viewport.right}}
+|      {{viewport.bottom}}
+ ---------------
+</pre></dd>-->
+			<dt></dt><dd>{{}}</dd>
+			<dt></dt><dd>{{}}</dd>
+		</dl>
+	</teleport>
 </template>
 
 <script>
 	import InputRange from '../fields/InputRange';
 	import InputJulianDate from '../fields/InputJulianDate';
 	import ControlViewport from './ControlViewport';
+	import useNumberFormat from '../../composables/useNumberFormat';
 	export default {
 		name: 'GroundControls',
 		components: {ControlViewport, InputJulianDate, InputRange},
-		props: {
-			config: Object,
-			jd: {
-				type: Number,
-				default: 2459045, // sometime in 2021
-			},
-			sun: Object,
-			moons: Array,
-			planets: Array,
-		},
 		
-		emits: [
-			'update:config',
-			'update:jd',
-			'increase:jd',
-			'update:obliquity',
-			'update:lnglat',
-		],
-		
-		mounted() {
-			this.loop();
-		},
-		
-		unmounted() {
-			this.config.intervalIds.forEach((id) => {
-				clearTimeout(id);
-				clearInterval(id);
-				cancelAnimationFrame(id);
-			});
-		},
-		
-		computed: {
-			cfg: {
-				get() { return this.config },
-				set(val) {
-					this.$emit('update:config', val);
+		// TODO 2021-07-15: temp replacement while i'm refactoring. remove and revonfig
+		data() {
+			return {
+				cfg: {
+					areControlsHidden: false
 				}
 			}
 		},
 		
+		
+		props: {
+			julianDate: {
+				type: Number,
+				required: false,
+				default: 0
+			}
+			// config: Object,
+			// jd: {
+			// 	type: Number,
+			// 	default: 2459045, // sometime in 2021
+			// },
+			// sun: Object,
+			// moons: Array,
+			// planets: Array,
+		},
+		
+		setup() {
+			const { format } = useNumberFormat();
+			return {
+				format
+			}
+		},
+		
+		watch: {
+			julianDate(jd) { this.$emit('update:julianDate', jd) },
+		},
+		
+		emits: [
+			'update:julianDate',
+			// 'update:config',
+			// 'update:jd',
+			// 'increase:jd',
+			// 'update:obliquity',
+			// 'update:lnglat',
+		],
+		
+		mounted() {
+			// this.loop();
+		},
+		
+		unmounted() {
+			// this.config.intervalIds.forEach((id) => {
+			// 	clearTimeout(id);
+			// 	clearInterval(id);
+			// 	cancelAnimationFrame(id);
+			// });
+		},
+		
+		computed: {
+			// cfg: {
+				// get() { return this.config },
+				// set(val) {
+				// 	this.$emit('update:config', val);
+				// }
+			// }
+		},
+		
 		methods: {
 			loop() {
-				this.cfg.intervalIds = []; // TODO i dunno, do this better.
-				if (this.cfg.isAuto) {
-					if (! this.cfg.autoRate) {
-						this.cfg.isAuto = 0;
-					} else {
-						this.$emit('increase:jd', parseFloat(this.cfg.autoRate));
-					}
-				}
-				this.cfg.intervalIds.push(requestAnimationFrame(() => {
-					this.loop();
-				}))
+				// this.cfg.intervalIds = []; // TODO i dunno, do this better.
+				// if (this.cfg.isAuto) {
+				// 	if (! this.cfg.autoRate) {
+				// 		this.cfg.isAuto = 0;
+				// 	} else {
+				// 		this.$emit('increase:jd', parseFloat(this.cfg.autoRate));
+				// 	}
+				// }
+				// this.cfg.intervalIds.push(requestAnimationFrame(() => {
+				// 	this.loop();
+				// }))
 			},
 		},
 	}

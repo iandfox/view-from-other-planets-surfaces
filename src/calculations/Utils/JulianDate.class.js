@@ -68,6 +68,7 @@ class JulianDate {
 	 * @return {number} JD
 	 */
 	fromDate(Y, M, D, H = 0, m = 0, s = 0, ms = 0) {
+		console.log({Y,M,D,H,m,s,ms});
 		// Ensure everything is a number.
 		[Y, M, D, H, m, s, ms].forEach(parseFloat); // TODO 2021-07-14: i don't know if this actually works :hmm:
 		
