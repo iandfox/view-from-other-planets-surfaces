@@ -8,6 +8,8 @@ import {AzimuthalCoordinates} from '../calculations/Utils/AzimuthalCoordinates.c
 
 import seedrandom from 'seedrandom';
 import {Drawing} from '../calculations/Drawing.class';
+import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
+import {MoonOrbitalBody} from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
 
 class Space {
 	
@@ -16,9 +18,6 @@ class Space {
 		spaceCanvas,
 		groundCanvas,
 		viewport,
-		sun,
-		moons = [],
-		planets = [],
 		JD = 2459404.5
 	) {
 		/* See https://github.com/davidbau/seedrandom.
@@ -26,35 +25,19 @@ class Space {
 		 */
 		seedrandom('malta', { global: true }); // Global PRNG: set Math.random.
 		
-		this.canvas = spaceCanvas;
-		this.ctx = spaceCanvas.getContext('2d');
-		this.starsCanvas = starsCanvas;
+		this.starsCanvas  = starsCanvas;
+		this.canvas       = spaceCanvas;
 		this.groundCanvas = groundCanvas;
-		this.viewport = viewport;
-		this._JD = JD;
+		this.ctx          = this.canvas.getContext('2d');
+		this.viewport     = viewport;
+		this._JD          = JD;
+		
+		this.sun     = null;
+		this.moons   = [];
+		this.planets = [];
+		this.stars   = [];
 		
 		this.drawing = new Drawing(this.canvas, {x: 0, y: 0}, this.viewport);
-		
-		sun.azi = new AzimuthalCoordinates(sun, sun);
-		sun.JD = JD;
-		this.sun = sun;
-		
-		moons = moons.map((moon) => {
-			moon.azi = new AzimuthalCoordinates(moon, sun);
-			moon.JD = JD;
-			return moon;
-		});
-		this.moons = moons;
-		
-		planets = planets.map((planet) => {
-			// TODO 2021-07-14: might need to change this, to represent planet vs moon diff
-			planet.azi = new AzimuthalCoordinates(planet, sun);
-			planet.JD = JD;
-			return planet;
-		});
-		this.planets = planets;
-		
-		this.stars = [];
 		
 		// TODO 2021-07-13: make the stars rotate
 	}
@@ -66,6 +49,48 @@ class Space {
 			ob.JD = jd;
 		});
 	}
+	
+	
+	/**
+	 * Add the sun. Only call this once.
+	 *
+	 * @since 2021-07-15
+	 * @return {SunOrbitalBody}
+	 */
+	addSun() {
+		const sun = new SunOrbitalBody(this.JD);
+		sun.azi = sun.azi ? sun.azi : new AzimuthalCoordinates(sun, sun);
+		this.sun = sun;
+		return this.sun;
+	}
+	
+	
+	/**
+	 * Add a moon.
+	 *
+	 * @since 2021-07-15
+	 *
+	 * @param {object} moonParameters
+	 * @param {string} color
+	 * @param {number} radius
+	 * @param {string} name
+	 * @return {MoonOrbitalBody}
+	 */
+	addMoon(moonParameters = {}, color = 'grey', radius = 20, name = 'Unnamed Moon') {
+		if (! this.sun) {
+			console.error('Cannot add a moon unless there is already a sun. Aborting.');
+			return null;
+		}
+		const moon = new MoonOrbitalBody(this.JD, moonParameters, {color, radius, name});
+		moon.azi = moon.azi ? moon.azi : new AzimuthalCoordinates(moon, this.sun);
+		this.moons.push(moon);
+		return moon;
+	}
+	
+	
+	// TODO.
+	// addPlanet() {}
+	
 	
 	/**
 	 * @since 2021-07-13
@@ -155,10 +180,11 @@ class Space {
 	 * @param ctx
 	 */
 	drawSun(canvas = this.canvas, ctx = this.ctx) {
-		const sun = this.sun;
-		const { alt_deg, az_deg } = sun.azi.alt_az;
-		// TODO 2021-07-14: allow defn for sun radius, sun color
-		this.drawing.circle(az_deg, alt_deg, 30, 'yellow', canvas, ctx);
+		if (this.sun) {
+			const sun = this.sun;
+			const {alt_deg, az_deg} = sun.azi.alt_az;
+			this.drawing.circle(az_deg, alt_deg, sun.radius, sun.color, canvas, ctx);
+		}
 	}
 	
 	

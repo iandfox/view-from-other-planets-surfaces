@@ -11,7 +11,7 @@ const dsin = (angle) => Math.sin(angle * Math.PI / 180);
 class SunOrbitalBody extends BaseOrbitalBody {
 	
 	constructor(JD = 2459404.5) {
-		super(JD);
+		super(JD, {}, {color: 'yellow', radius: 30});
 	}
 	
 	///

@@ -1,6 +1,6 @@
 <!--
  - Vue Component: ViewFromGround
- -     Like a stellarium in my browser.
+ -     Like a planetarium in my browser.
  -     
  -     Example usage:
  -         <ViewFromGround></ViewFromGround>
@@ -9,7 +9,7 @@
 -->
 
 <template>
-	<GroundControls
+	<!--<GroundControls
 		v-model:config="config"
 		v-model:jd="JD"
 		v-bind:sun="sun"
@@ -18,33 +18,64 @@
 		@increase:jd="JD += $event"
 		@update:obliquity="setObliquityOnBodies"
 		@update:lnglat="setLocalLongLat"
-	></GroundControls>
+	></GroundControls>-->
 	
-	<div class="space">
-		<canvas width="1600" height="800" id="stars" ref="stars"></canvas>
-		<canvas width="1600" height="800" id="space" ref="space"></canvas>
-		<canvas width="1600" height="800" id="ground" ref="ground"></canvas>
-	</div>
+	<Planetarium
+		:julian-date="julianDate"
+		:moons-parameters="moonsParameters"
+		:viewport="viewport"
+	></Planetarium>
 </template>
 
 <script>
 	import {MoonOrbitalBody} from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
 	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
 	import {Space} from '../SpaceDrawing/Space.class';
-	import { ref } from 'vue';
-	import InputRange from './fields/InputRange';
-	import ChartsViewer from './utils/ChartsViewer';
-	import InputJulianDate from './fields/InputJulianDate';
-	import ControlViewport from './view-controls/ControlViewport';
+	import {ref} from 'vue';
 	import GroundControls from './view-controls/GroundControls';
+	import Planetarium from './Planetarium';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {GroundControls, ControlViewport, InputJulianDate, ChartsViewer, InputRange},
+		components: {Planetarium, GroundControls},
 		
 		data() {
 			return {
-				space: null,
+				moonsParameters: [
+					{
+						name: 'Moon', // Earth's Moon
+						color: 'grey',
+						radius: 28,
+						N: [125.1228, -0.0529538083],
+						i: [5.1454, 0],
+						w: [318.0634, 0.1643573223],
+						a: [60.2666, 0], // in Earth radii
+						e: [0.054900, 0],
+						M: [115.3654, 13.0649929509],
+					},
+					{
+						name: 'F\'an',
+						color: 'orange',
+						radius: 15,
+						N: [125.1228, - 0.0529538083],
+						i: [5.1454, 1],
+						w: [318.0634, 0.1643573223],
+						a: [60.2666, 0], // in Earth radii
+						e: [0.054900, 0],
+						M: [0.3654, 53.0649929509],
+					},
+					{
+						name: 'Gomor',
+						color: 'teal',
+						radius: 40,
+						N: [125.1228, -0.0529538083],
+						i: [5.1454, 1],
+						w: [8.0634, 0.1643573223],
+						a: [1.2666, 0], // in Earth radii
+						e: [0.054900, 0],
+						M: [300.3654, 13.0649929509],
+					}
+				],
 				
 				numberFormat: new Intl.NumberFormat(
 					'en-US',
@@ -53,6 +84,19 @@
 						maximumFractionDigits: 4
 					}
 				),
+				
+				///
+				/// Config and Interactables
+				///
+				
+				julianDate: 2459404.5,
+				
+				viewport: {
+					bottom: -90,
+					top:     90,
+					left:   -180,
+					right:   180,
+				},
 				
 				config: {
 					obliquity: 0,
@@ -68,166 +112,96 @@
 					
 					intervalIds: [],
 					
-					viewport: {
-						bottom: -90,
-						top:     90,
-						left:   -180,
-						right:   180,
-					},
+					
 				},
 			}
 		},
 		
-		setup() {
-			const JD   = ref(2459404.5); //ref(2459404.5);
-			const moons = [
-				// Earth's moon
-				new MoonOrbitalBody(
-					JD.value,
-					{
-						N: [125.1228, -0.0529538083],
-						i: [5.1454, 0],
-						w: [318.0634, 0.1643573223],
-						a: [60.2666, 0], // in Earth radii
-						e: [0.054900, 0],
-						M: [115.3654, 13.0649929509],
-					},
-					{
-						color: 'grey',
-						radius: 28,
-					}
-				),
-				
-				// Gomor
-				new MoonOrbitalBody(
-					JD.value,
-					{
-						N: [125.1228, -0.0529538083],
-						i: [5.1454, 1],
-						w: [8.0634, 0.1643573223],
-						a: [1.2666, 0], // in Earth radii
-						e: [0.054900, 0],
-						M: [300.3654, 13.0649929509],
-					},
-					{
-						color: 'teal',
-						radius: 40,
-					}
-				),
-				
-				// F'an
-				new MoonOrbitalBody(
-					JD.value,
-					{
-						N: [125.1228, -0.0529538083],
-						i: [5.1454, 1],
-						w: [318.0634, 0.1643573223],
-						a: [60.2666, 0], // in Earth radii
-						e: [0.054900, 0],
-						M: [0.3654, 53.0649929509],
-					},
-					{
-						color: 'orange',
-						radius: 15,
-					}
-				),
-			];
-			const sun  = new SunOrbitalBody(JD.value);
-			const planets = [];
-			
-			return {
-				JD,
-				moons,
-				sun,
-				planets,
-			}
-		},
-		
-		computed: {
-			viewport() { return this.config.viewport }
-		},
-		
 		mounted() {
-			// set initial reactive values
-			this.config.obliquity = this.sun.ecl_param[0];
-			this.moons.forEach((moon) => {
-				this.config.moonParams.push(moon.params);
-			});
-			
-			this.space = new Space(
-				document.getElementById('stars'),
-				document.getElementById('space'),
-				document.getElementById('ground'),
-				this.config.viewport,
-				this.sun,
-				this.moons,
-				[] // planets
+			console.log(
+				'%c-----' + '%c ViewFromGround.vue : Mounted ' + '%c-----',
+				'color: white; background: darkgreen;',
+				'color: black; background: #ddd;',
+				'color: white; background: darkgreen;',
 			);
-			this.space.drawBackground(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
-			this.space.drawStars(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
-			this.draw();
+			// set initial reactive values
+			// this.config.obliquity = this.sun.ecl_param[0];
+			// this.moons.forEach((moon) => {
+			// 	this.config.moonParams.push(moon.params);
+			// });
+			//
+			// this.space = new Space(
+			// 	document.getElementById('stars'),
+			// 	document.getElementById('space'),
+			// 	document.getElementById('ground'),
+			// 	this.config.viewport,
+			// 	this.sun,
+			// 	this.moons,
+			// 	[] // planets
+			// );
+			// this.space.drawBackground(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
+			// this.space.drawStars(this.space.starsCanvas, this.space.starsCanvas.getContext('2d'));
+			// this.draw();
 		},
 		
 		
 		watch: {
-			JD() {
-				this.space.JD = parseFloat(this.JD);
-				this.draw();
-			}
+			// JD() {
+			// 	this.space.JD = parseFloat(this.JD);
+			// 	this.draw();
+			// }
 		},
 		
 		methods: {
-			draw() {
-				this.space.draw(this.config.shouldDrawHorizon, this.config.shouldDrawSky, this.config.shouldDrawCompass);
-			},
+			// draw() {
+			// 	this.space.draw(this.config.shouldDrawHorizon, this.config.shouldDrawSky, this.config.shouldDrawCompass);
+			// },
 			
 			/**
 			 * @since 2021-07-14
 			 */
-			setObliquityOnBodies() {
-				const obliq = parseFloat(this.config.obliquity);
-				[this.sun, ...this.moons, ...this.planets].forEach((ob) => {
-					ob.ecl_param[0] = obliq;
-				});
-				
-				if (! this.isAuto) {
-					this.draw();
-				}
-			},
+			// setObliquityOnBodies() {
+			// 	const obliq = parseFloat(this.config.obliquity);
+			// 	[this.sun, ...this.moons, ...this.planets].forEach((ob) => {
+			// 		ob.ecl_param[0] = obliq;
+			// 	});
+			//
+			// 	if (! this.isAuto) {
+			// 		this.draw();
+			// 	}
+			// },
 			
 			/**
 			 * @since 2021-07-14
 			 */
-			setMoonParam(moonIndex, slug, paramIndex = 0) {
-				this.moons[moonIndex].params[slug][paramIndex] = this.config.moonParams[moonIndex][slug][paramIndex];
-				
-				if (! this.isAuto) {
-					this.draw();
-				}
-			},
+			// setMoonParam(moonIndex, slug, paramIndex = 0) {
+			// 	this.moons[moonIndex].params[slug][paramIndex] = this.config.moonParams[moonIndex][slug][paramIndex];
+			//
+			// 	if (! this.isAuto) {
+			// 		this.draw();
+			// 	}
+			// },
 			
 			/**
 			 * @since 2021-07-14
 			 */
-			setLocalLongLat() {
-				const lng = parseFloat(this.config.localLongitude),
-					lat = parseFloat(this.config.localLatitude);
-				[this.sun, ...this.moons, ...this.planets].forEach((ob) => {
-					ob.azi.siderealTime.localLongitude_deg = lng;
-					ob.azi.siderealTime.localLatitude_deg = lat;
-				});
-				
-				if (! this.isAuto) {
-					this.draw();
-				}
-			}
+			// setLocalLongLat() {
+			// 	const lng = parseFloat(this.config.localLongitude),
+			// 		lat = parseFloat(this.config.localLatitude);
+			// 	[this.sun, ...this.moons, ...this.planets].forEach((ob) => {
+			// 		ob.azi.siderealTime.localLongitude_deg = lng;
+			// 		ob.azi.siderealTime.localLatitude_deg = lat;
+			// 	});
+			//
+			// 	if (! this.isAuto) {
+			// 		this.draw();
+			// 	}
+			// }
 		},
 	}
 </script>
 
 <style scoped>
-	.space {
-	}
 	
 	canvas {
 		position: fixed; top: 0; right: 0; left: 0; bottom: 0;
