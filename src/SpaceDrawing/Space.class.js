@@ -7,6 +7,7 @@
 import {AzimuthalCoordinates} from '../calculations/Utils/AzimuthalCoordinates.class';
 
 import seedrandom from 'seedrandom';
+import {Drawing} from '../calculations/Drawing.class';
 
 class Space {
 	
@@ -31,6 +32,8 @@ class Space {
 		this.groundCanvas = groundCanvas;
 		this.viewport = viewport;
 		this._JD = JD;
+		
+		this.drawing = new Drawing(this.canvas, {x: 0, y: 0}, this.viewport);
 		
 		sun.azi = new AzimuthalCoordinates(sun, sun);
 		sun.JD = JD;
@@ -139,7 +142,7 @@ class Space {
 		}
 		
 		this.stars.forEach((star) => {
-			this.circle(star.x, star.y, star.radius, star.color, canvas, ctx);
+			this.drawing.circle(star.x, star.y, star.radius, star.color, canvas, ctx);
 		});
 		
 	}
@@ -155,7 +158,7 @@ class Space {
 		const sun = this.sun;
 		const { alt_deg, az_deg } = sun.azi.alt_az;
 		// TODO 2021-07-14: allow defn for sun radius, sun color
-		this.circle(az_deg, alt_deg, 30, 'yellow', canvas, ctx);
+		this.drawing.circle(az_deg, alt_deg, 30, 'yellow', canvas, ctx);
 	}
 	
 	
@@ -169,7 +172,7 @@ class Space {
 		const sunAlt = this.sun.azi.alt_az.alt_deg;
 		if (sunAlt >= -30) {
 			ctx.globalAlpha = Math.min(1, (sunAlt + 30) / 60);
-			this.rect(this.viewport.left, 0, this.viewport.right, 90, 'blue', canvas, ctx);
+			this.drawing.rect(this.viewport.left, 0, this.viewport.right, 90, 'blue', canvas, ctx);
 			ctx.globalAlpha = 1;
 		}
 	}
@@ -195,7 +198,7 @@ class Space {
 	drawMoons(canvas = this.canvas, ctx = this.ctx) {
 		this.moons.forEach((moon) => {
 			const { alt_deg, az_deg } = moon.azi.alt_az;
-			this.circle(az_deg, alt_deg, moon.radius, moon.color, canvas, ctx);
+			this.drawing.circle(az_deg, alt_deg, moon.radius, moon.color, canvas, ctx);
 		});
 	}
 	
@@ -207,7 +210,7 @@ class Space {
 	 * @param ctx
 	 */
 	drawHorizon(canvas = this.canvas, ctx = this.ctx) {
-		this.rect(
+		this.drawing.rect(
 			this.viewport.left,
 			0,
 			this.viewport.right,
@@ -228,19 +231,19 @@ class Space {
 	drawCompass(canvas = this.canvas, ctx = this.ctx) {
 		if (this.viewport.bottom <= 0 && this.viewport.top >= 0) {
 			// Draw the azimuth-axis
-			this.line(this.viewport.left, 0, this.viewport.right, 0, 'yellow', 1, canvas, ctx);
+			this.drawing.line(this.viewport.left, 0, this.viewport.right, 0, 'yellow', 1, canvas, ctx);
 			
 			const leftTick = Math.max(10 * Math.floor(this.viewport.left / 10), -180);
 			const rightTick = Math.max(10 * Math.ceil(this.viewport.left / 10), 180);
 			for (let x = leftTick; x <= rightTick; x += 10) {
-				this.tickMark(x, 0, x, 'yellow', 1, 4, true, canvas, ctx);
+				this.drawing.tickMark(x, 0, x, 'yellow', 1, 4, true, canvas, ctx);
 			}
 		}
 		
 		if (this.viewport.left <= 0 && this.viewport.right >= 0) {
 			// Draw the altitude-axis, leaving a gap in the middle
-			this.line(0, this.viewport.bottom, 0, -8, 'yellow', 1, canvas, ctx);
-			this.line(0, 8, 0, this.viewport.top, 'yellow', 1, canvas, ctx);
+			this.drawing.line(0, this.viewport.bottom, 0, -8, 'yellow', 1, canvas, ctx);
+			this.drawing.line(0, 8, 0, this.viewport.top, 'yellow', 1, canvas, ctx);
 			
 			const bottomTick = Math.max(10 * Math.floor(this.viewport.bottom / 10), -90);
 			const topTick = Math.max(10 * Math.ceil(this.viewport.top / 10), 90);
@@ -248,148 +251,8 @@ class Space {
 				if (Math.abs(y) < 0.0001 /* i.e., = 0 */) {
 					continue;
 				}
-				this.tickMark(0, y, y, 'yellow', 1, 4, false, canvas, ctx);
+				this.drawing.tickMark(0, y, y, 'yellow', 1, 4, false, canvas, ctx);
 			}
-		}
-	}
-	
-	
-	
-	///
-	/// Drawing
-	///
-	
-	
-	/**
-	 * @since 2021-07-13
-	 *
-	 * @param x_s   The x-coordinate in the space's coordinate system
-	 * @param y_s   The y-coordinate in the space's coordinate system
-	 * @param r
-	 * @param color
-	 * @param canvas
-	 * @param ctx
-	 */
-	circle(x_s, y_s, r, color = 'white', canvas = this.canvas, ctx = this.ctx) {
-		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.arc(x, y, r, 0, 2 * Math.PI);
-		ctx.fill();
-	}
-	
-	
-	/**
-	 * @since 2021-07-14
-	 *
-	 * @param x1_s
-	 * @param y1_s
-	 * @param x2_s
-	 * @param y2_s
-	 * @param color
-	 * @param canvas
-	 * @param ctx
-	 */
-	rect(x1_s, y1_s, x2_s, y2_s, color = 'white', canvas = this.canvas, ctx = this.ctx) {
-		const {x, y} = this.toCanvas(x1_s, y1_s, canvas, ctx);
-		const {x: x2, y: y2} = this.toCanvas(x2_s, y2_s, canvas, ctx);
-		const w = x2 - x, h = y2 - y;
-		ctx.fillStyle = color;
-		ctx.fillRect(x, y, w, h);
-	}
-	
-	
-	/**
-	 * @since 2021-07-14
-	 *
-	 * @param x1_s
-	 * @param y1_s
-	 * @param x2_s
-	 * @param y2_s
-	 * @param color
-	 * @param lineWidth
-	 * @param canvas
-	 * @param ctx
-	 */
-	line(x1_s, y1_s, x2_s, y2_s, color = 'white', lineWidth = 1, canvas = this.canvas, ctx = this.ctx) {
-		const {x: x1, y: y1} = this.toCanvas(x1_s, y1_s, canvas, ctx);
-		const {x: x2, y: y2} = this.toCanvas(x2_s, y2_s, canvas, ctx);
-		ctx.strokeStyle = color;
-		ctx.strokeWidth = lineWidth;
-		ctx.beginPath();
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2, y2);
-		ctx.stroke();
-	}
-	
-	
-	/**
-	 * @since 2021-07-14
-	 *
-	 * @param x_s
-	 * @param y_s
-	 * @param label
-	 * @param color
-	 * @param lineWidth
-	 * @param tickLength
-	 * @param isVertical
-	 * @param canvas
-	 * @param ctx
-	 */
-	tickMark(x_s, y_s, label = x_s, color = 'white', lineWidth = 1, tickLength = 4, isVertical = true, canvas = this.canvas, ctx = this.ctx) {
-		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
-		const halfLength_s = 0.5 * tickLength;
-		ctx.fillStyle = color;
-		ctx.font = '13px serif';
-		
-		// convert to canvas coords
-		let { x: halfLength } = this.toCanvas(x_s + halfLength_s, 0);
-		halfLength -= x;
-		
-		if (isVertical) {
-			this.line(x_s, y_s - halfLength_s, x_s, y_s + halfLength_s, color, lineWidth, canvas, ctx);
-			ctx.textBaseline = 'bottom';
-			ctx.textAlign = 'center';
-			ctx.fillText(label, x, y - halfLength);
-		} else {
-			this.line(x_s - halfLength_s, y_s, x_s + halfLength_s, y_s, color, lineWidth, canvas, ctx);
-			ctx.textBaseline = 'middle';
-			ctx.textAlign = 'left';
-			ctx.fillText(label, x + 1.5 * halfLength, y);
-		}
-	}
-	
-	
-	text(x_s, y_s, label = x_s, color = 'white', canvas = this.canvas, ctx = this.ctx) {
-		const {x, y} = this.toCanvas(x_s, y_s, canvas, ctx);
-		ctx.fillStyle = color;
-		ctx.fillText(label, x, y);
-	}
-	
-	
-	/**
-	 * @since 2021-07-13
-	 *
-	 * @param x_s
-	 * @param y_s
-	 * @param canvas
-	 * @param ctx
-	 * @return {{x: number, y: number}}
-	 */
-	toCanvas(x_s, y_s, canvas = this.canvas, ctx = this.ctx) {
-		const hor = this.viewport.right - this.viewport.left,
-			ver = this.viewport.top - this.viewport.bottom;
-		if (hor === 0 || ver === 0) {
-			console.warn('Bad viewport given. Sending (0, 0)')
-			return {x: 0, y: 0};
-		}
-		
-		const scl_x = (x_s - this.viewport.left) / hor,
-			scl_y = (y_s - this.viewport.bottom) / ver;
-		return {
-			x: scl_x * this.canvas.width,
-			y: (1 - scl_y) * this.canvas.height
 		}
 	}
 }

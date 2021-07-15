@@ -24,6 +24,8 @@ class JulianDate {
 	
 	get pretty() {
 		// TODO
+		// for now i'll just return iso
+		return this.iso;
 	}
 	
 	get parts() {

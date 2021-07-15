@@ -65,7 +65,7 @@
 					:step="0.001"
 					units="deg"
 					:fraction-digits="3"
-					@input="$emit('lnglat')"
+					@input="$emit('update:lnglat')"
 				></InputRange>
 				<InputRange
 					v-model="cfg.localLatitude"
@@ -75,7 +75,7 @@
 					:step="0.001"
 					units="deg"
 					:fraction-digits="3"
-					@input="$emit('lnglat')"
+					@input="$emit('update:lnglat')"
 				></InputRange>
 			</div>
 			

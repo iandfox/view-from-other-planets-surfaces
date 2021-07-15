@@ -14,7 +14,7 @@
 <template>
 	<div>
 		<label v-if="label">{{label}}</label>
-		<input type="datetime-local" style="width: 30ch;" v-model="datetime">
+		<input type="datetime-local" style="width: 34ch;" v-model="datetime">
 	</div>
 </template>
 
@@ -36,6 +36,11 @@
 				_datetime: '', // having this helps with reactivity
 				helper: new JulianDate(this.modelValue),
 			};
+		},
+		
+		mounted() {
+			// set the initial value
+			this._datetime = this.helper.iso;
 		},
 		
 		watch: {

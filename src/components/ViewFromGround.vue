@@ -128,7 +128,7 @@
 					},
 					{
 						color: 'orange',
-						radius: 10,
+						radius: 15,
 					}
 				),
 			];
@@ -229,14 +229,11 @@
 	.space {
 	}
 	
-	#space, #stars {
-		max-width: 100%;
-		max-height: 100%;
+	canvas {
+		position: fixed; top: 0; right: 0; left: 0; bottom: 0;
+		width: 100%;
+		height: 100%;
 		object-fit: contain;
-		display: block;
-		
-		position: fixed;
-		top: 0; left: 0; right: 0; bottom: 0;
 	}
 	
 	#stars {
