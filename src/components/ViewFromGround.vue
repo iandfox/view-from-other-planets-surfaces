@@ -32,6 +32,7 @@
 	
 	<GroundControls
 		v-model:julian-date="julianDate"
+		v-model:viewport="viewport"
 	></GroundControls>
 	
 	<!--v-model:config="config"-->

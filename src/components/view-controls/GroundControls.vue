@@ -4,14 +4,8 @@
  -     
  -     Example usage:
  -         <GroundControls
- -             v-model:config="config"
- -             v-bind:jd="JD"
- -             v-bind:sun="sun"
- -             v-bind:moons="moons"
- -             v-bind:planets="planets"
- -             @increase:jd="JD = $event"
- -             @update:obliquity="setObliquityOnBodies"
- -             @update:lnglat="setLocalLongLat"
+ -             v-model:julian-date="julianDate"
+ -             v-model:viewport="viewport"
  -         ></GroundControls>
  - 
  - @created 2021-07-14
@@ -25,6 +19,10 @@
 			<InputJulianDate
 				v-model="julianDate"
 			></InputJulianDate>
+			
+			<ControlViewport
+				v-model="viewport"
+			></ControlViewport>
 			<!--
 			<div style="font-size: 0.8em;">
 				<div>
@@ -176,19 +174,17 @@
 				type: Number,
 				required: false,
 				default: 0
+			},
+			viewport: {
+				type: Object,
+				required: false,
+				default: {top: -1, right: -1, bottom: -1, left: -1},
 			}
-			// config: Object,
-			// jd: {
-			// 	type: Number,
-			// 	default: 2459045, // sometime in 2021
-			// },
-			// sun: Object,
-			// moons: Array,
-			// planets: Array,
 		},
 		
 		setup() {
 			const { format } = useNumberFormat();
+			
 			return {
 				format
 			}
@@ -200,47 +196,19 @@
 		
 		emits: [
 			'update:julianDate',
-			// 'update:config',
-			// 'update:jd',
-			// 'increase:jd',
-			// 'update:obliquity',
-			// 'update:lnglat',
 		],
 		
 		mounted() {
-			// this.loop();
 		},
 		
 		unmounted() {
-			// this.config.intervalIds.forEach((id) => {
-			// 	clearTimeout(id);
-			// 	clearInterval(id);
-			// 	cancelAnimationFrame(id);
-			// });
 		},
 		
 		computed: {
-			// cfg: {
-				// get() { return this.config },
-				// set(val) {
-				// 	this.$emit('update:config', val);
-				// }
-			// }
 		},
 		
 		methods: {
 			loop() {
-				// this.cfg.intervalIds = []; // TODO i dunno, do this better.
-				// if (this.cfg.isAuto) {
-				// 	if (! this.cfg.autoRate) {
-				// 		this.cfg.isAuto = 0;
-				// 	} else {
-				// 		this.$emit('increase:jd', parseFloat(this.cfg.autoRate));
-				// 	}
-				// }
-				// this.cfg.intervalIds.push(requestAnimationFrame(() => {
-				// 	this.loop();
-				// }))
 			},
 		},
 	}

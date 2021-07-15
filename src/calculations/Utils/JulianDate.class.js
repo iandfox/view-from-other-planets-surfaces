@@ -56,7 +56,7 @@ class JulianDate {
 	}
 	
 	/**
-	 *
+	 * @since 2021-07-13
 	 *
 	 * @param {number} Y
 	 * @param {number} M Month number. element of {1, 2, ..., 12}
@@ -68,10 +68,6 @@ class JulianDate {
 	 * @return {number} JD
 	 */
 	fromDate(Y, M, D, H = 0, m = 0, s = 0, ms = 0) {
-		console.log({Y,M,D,H,m,s,ms});
-		// Ensure everything is a number.
-		[Y, M, D, H, m, s, ms].forEach(parseFloat); // TODO 2021-07-14: i don't know if this actually works :hmm:
-		
 		H += this.UT_hours;
 		
 		const fractionalPart = (H/24) + (m/(60*24)) + (s/(60*60*24)) + (ms/(1000*60*60*24));
