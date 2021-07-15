@@ -15,7 +15,12 @@
 	<div>
 		<label v-if="label">{{label}}</label>
 		<input type="datetime-local" style="width: 34ch;" v-model="datetime">
-		<br>
+		<div class="vcr">
+			<button @click="stepBack()"><i class="fa fa-chevron-left"></i></button>
+			<button @click="toggleAuto()"><i class="fa fa-pause" v-if="isAuto"></i><i class="fa fa-play" v-else></i></button>
+			<button @click="stepForward()"><i class="fa fa-chevron-right"></i></button>
+			&nbsp;<label>Step: <input type="number" style="width: 10ch;" v-model.number="step"></label>
+		</div>
 		<small><em>{{format(modelValue)}}</em></small>
 	</div>
 </template>
@@ -38,6 +43,9 @@
 			return {
 				_datetime: '', // having this helps with reactivity
 				helper: new JulianDate(this.modelValue),
+				isAuto: false,
+				autoIntervalId: 0,
+				step: 0.1, // in days
 			};
 		},
 		
@@ -51,6 +59,16 @@
 		mounted() {
 			// set the initial value
 			this._datetime = this.helper.iso;
+			
+			this.autoIntervalId = setInterval(() => {
+				if (this.isAuto) {
+					this.JD = this.JD + this.step;
+				}
+			}, 100);
+		},
+		
+		unmounted() {
+			clearInterval(this.autoIntervalId);
 		},
 		
 		watch: {
@@ -94,6 +112,18 @@
 					this.$emit('update:modelValue', JD);
 				}
 			},
+			
+			stepBack(scl = 1) {
+				this.JD = this.JD - (scl * this.step);
+			},
+			
+			stepForward(scl = 1) {
+				this.JD = this.JD + (scl * this.step);
+			},
+			
+			toggleAuto() {
+				this.isAuto = ! this.isAuto;
+			}
 		},
 	}
 </script>
