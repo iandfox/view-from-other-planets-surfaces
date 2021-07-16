@@ -36,15 +36,7 @@
 			</div>
 			
 			<!--
-			<div style="font-size: 0.8em;">
-				<div>
-					<span>
-						Rate:
-						<br>
-						<label><input type="checkbox" v-model="cfg.isAuto"> Auto Forward</label>
-					</span> <input type="number" v-model.number="cfg.autoRate" step="0.001">
-				</div>
-			</div>
+		
 			
 			<InputRange
 				v-model="cfg.obliquity"
@@ -57,28 +49,6 @@
 				@input="$emit('update:obliquity')"
 			></InputRange>
 			
-			<div>
-				<InputRange
-					v-model="cfg.localLongitude"
-					label="Local Longitude"
-					:min="-180"
-					:max="180"
-					:step="0.001"
-					units="deg"
-					:fraction-digits="3"
-					@input="$emit('update:lnglat')"
-				></InputRange>
-				<InputRange
-					v-model="cfg.localLatitude"
-					label="Local Latitude"
-					:min="-90"
-					:max="90"
-					:step="0.001"
-					units="deg"
-					:fraction-digits="3"
-					@input="$emit('update:lnglat')"
-				></InputRange>
-			</div>
 			
 			<div style="text-align: left; width:100px; margin: 0 auto;">
 				<label><input type="checkbox" v-model="cfg.shouldDrawHorizon"> Draw Horizon</label>
@@ -88,55 +58,7 @@
 				<label><input type="checkbox" v-model="cfg.shouldDrawCompass"> Draw Compass</label>
 			</div>
 			
-			<ControlViewport v-model="cfg.viewport"></ControlViewport>
 			
-			<div v-for="(moon, moonIndex) in moons">
-				<div style="font-size: 0.8em"><strong>Moon #{{moonIndex}}</strong></div>
-				<div v-if="cfg.moonParams[moonIndex]">
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].N[0]"
-						label="Longitude of the ascending node"
-						:min="0" :max="360" :step="0.5"
-						units="deg" :fraction-digits="1"
-						@input="setMoonParam(0, 'N')"
-					></InputRange>
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].i[0]"
-						label="Inclination"
-						:min="-90" :max="90" :step="0.5"
-						units="deg" :fraction-digits="1"
-						@input="setMoonParam(0, 'i')"
-					></InputRange>
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].w[0]"
-						label="Arg of periapsis"
-						:min="0" :max="360" :step="0.5"
-						units="deg" :fraction-digits="1"
-						@input="setMoonParam(0, 'w')"
-					></InputRange>
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].a[0]"
-						label="Semi-major axis"
-						:min="0" :max="500" :step="0.6"
-						units="" :fraction-digits="1"
-						@input="setMoonParam(0, 'a')"
-					></InputRange>
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].e[0]"
-						label="Eccentricity"
-						:min="0" :max="1" :step="0.01"
-						units="" :fraction-digits="2"
-						@input="setMoonParam(0, 'e')"
-					></InputRange>
-					<InputRange
-						v-model="cfg.moonParams[moonIndex].M[0]"
-						label="Mean Anomaly"
-						:min="-180" :max="180" :step="0.5"
-						units="deg" :fraction-digits="1"
-						@input="setMoonParam(0, 'M')"
-					></InputRange>
-				</div>
-				<p v-else>Error: couldn't find moonParams[{{moonIndex}}]</p>
 			</div>
 			-->
 		</div>
@@ -150,14 +72,6 @@
 		</small></p>
 		<dl>
 			<dt>JD</dt><dd>[P] {{format(julianDate)}}</dd>
-			<!--<dt style="align-self: center">Viewport</dt><dd><pre style="text-align: left; border-left: none;"> _______________
-|       {{viewport.top}}
-| {{viewport.left}}      {{viewport.right}}
-|      {{viewport.bottom}}
- ---------------
-</pre></dd>-->
-			<dt></dt><dd>{{}}</dd>
-			<dt></dt><dd>{{}}</dd>
 		</dl>
 	</teleport>
 </template>
@@ -237,8 +151,8 @@
 	.controls-wrapper, .controls {
 		position: fixed;
 		bottom: 0;
-		left: 10vw;
-		right: 10vw;
+		left: 5vw;
+		right: 5vw;
 		max-height: 300px;
 		max-width: 80vw;
 		z-index: 999;

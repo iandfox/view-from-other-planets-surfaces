@@ -42,15 +42,6 @@
 		v-model:moons-parameters="moonsParameters"
 	></GroundControls>
 	
-	<!--v-model:config="config"-->
-	<!--v-model:jd="JD"-->
-	<!--v-bind:sun="sun"-->
-	<!--v-bind:moons="moons"-->
-	<!--v-bind:planets="planets"-->
-	<!--@increase:jd="JD += $event"-->
-	<!--@update:obliquity="setObliquityOnBodies"-->
-	<!--@update:lnglat="setLocalLongLat"-->
-	
 	<Planetarium
 		:julian-date="julianDate"
 		:moons-parameters="moonsParameters"

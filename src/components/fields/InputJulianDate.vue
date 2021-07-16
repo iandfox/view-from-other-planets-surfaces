@@ -45,7 +45,7 @@
 				helper: new JulianDate(this.modelValue),
 				isAuto: false,
 				autoIntervalId: 0,
-				step: 0.1, // in days
+				step: 0.01, // in days
 			};
 		},
 		

@@ -136,6 +136,7 @@
 			julianDate(jd) {
 				if (this.space) {
 					this.space.JD = jd;
+					this.draw();
 				}
 			},
 		},
