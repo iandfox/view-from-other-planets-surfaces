@@ -13,9 +13,9 @@
 
 <template>
 	<div>
-		<label>Date:</label> <input type="date" style="width: 34ch;" v-model="date" @input="parseDateAndTime">
+		<label>Date:</label> <input type="date" style="width: 34ch;" v-model="date" @input="emitDateTime()">
 		<br>
-		<label>Time:</label> <input type="time" style="width: 34ch;" v-model="time" @input="parseDateAndTime">
+		<label>Time:</label> <input type="time" style="width: 34ch;" v-model="time" @input="emitDateTime()">
 		<div class="vcr">
 			<button @click="stepBack()"><i class="fa fa-chevron-left"></i></button>
 			<button @click="toggleAuto()"><i class="fa fa-pause" v-if="isAuto"></i><i class="fa fa-play" v-else></i></button>
@@ -66,7 +66,8 @@
 				if (this.isAuto) {
 					this.stepForward();
 				}
-			}, 50);
+			}, 20);
+			this.setDateTime(this.modelValue);
 		},
 		
 		unmounted() {
@@ -74,56 +75,26 @@
 		},
 		
 		watch: {
-			date() {
-				const date=this.date,
-					time=this.time;
-				const datetime = date + 'T' + time + ':00-07:00';
-				this.$emit('update:modelValue', 0.5 + JulianDate.datetimeToJD(datetime));
+			modelValue(jd) {
+				this.setDateTime(this.modelValue);
 			},
-			time() {
-				const date=this.date,
-					time=this.time;
-				const datetime = date + 'T' + time + ':00-07:00';
-				this.$emit('update:modelValue', 0.5 + JulianDate.datetimeToJD(datetime));
-			},
-		},
-		
-		computed: {
-			
-			
-			// JD: {
-			// 	get() {
-			// 		return this.modelValue;
-			// 	},
-			// 	set(newValue) {
-			// 		this.$emit('update:modelValue', newValue);
-			// 		this.helper.JD = newValue;
-			// 	}
-			// },
-			//
-			// datetime: {
-			// 	get() {
-			// 		return this._datetime;
-			// 	},
-			// 	set(newValue) {
-			// 		return this.setJDFromDatetime(newValue);
-			// 	}
-			// }
 		},
 		
 		methods: {
-			parseDateAndTime() {
-				// const datetime = this.date + 'T' + this.time;
-				// const epoch = Date.parse(datetime) / 1000;
-				// const jd = this.helper.fromEpoch(epoch);
-				// console.log('parseDateAndTime Results:', {
-				// 	datetime,
-				// 	jd,
-				// 	'Date.parse(datetime)/1000 (the epoch)': Date.parse(datetime) / 1000,
-				// 	'what if we made a (new JulianDate(jd)).iso': (new JulianDate(jd).iso)
-				// });
-				// this.$emit('update:modelValue', jd);
-				// this.JD = jd;
+			setDateTime(jd) {
+				this.helper.JD = jd;
+				const epoch = JulianDate.jdToEpoch(jd);
+				const m = moment.unix(epoch);
+				this.date = m.format('YYYY-MM-DD');
+				this.time = m.format('hh:mm');
+			},
+			
+			emitDateTime() {
+				const date = this.date,
+					time = this.time;
+				const datetime = date + 'T' + time + ':00-07:00';
+				console.log('emitDatetime', {date, time, datetime, jd: JulianDate.datetimeToJD(datetime)});
+				this.$emit('update:modelValue', 0.5 + JulianDate.datetimeToJD(datetime));
 			},
 			
 			stepBack(scl = 1) {

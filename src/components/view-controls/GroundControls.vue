@@ -20,10 +20,47 @@
 			<InputJulianDate
 				v-model="julianDate"
 			></InputJulianDate>
-			
 			<ControlViewport
 				v-model="viewport"
 			></ControlViewport>
+			
+			<div>
+				<button class="tiny info button" style="display: inline-block; justify-self: center; align-self: center;" @click="logCurrentParams()">Log Current Params</button>
+				<InputRange
+					v-model.number="miscConfig.localLongitude"
+					label="Longitude"
+					:min="-180"
+					:max="180"
+					:step="0.1"
+					:fraction-digits="3"
+				></InputRange>
+				<InputRange
+					v-model.number="miscConfig.localLatitude"
+					label="Latitude"
+					:min="-180"
+					:max="180"
+					:step="0.1"
+					:fraction-digits="3"
+				></InputRange>
+				<InputRange
+					v-model.number="miscConfig.obliquity"
+					label="Obliquity"
+					:min="-180"
+					:max="180"
+					:step="0.1"
+					:fraction-digits="3"
+				></InputRange>
+			</div>
+			
+			<br>
+			
+			<div style="display: inline-block; text-align: left; justify-self: center;">
+				<label><input type="checkbox" v-model="miscConfig.shouldDrawHorizon"> Draw Horizon</label>
+				<br>
+				<label><input type="checkbox" v-model="miscConfig.shouldDrawSky"> Draw Sky</label>
+				<br>
+				<label><input type="checkbox" v-model="miscConfig.shouldDrawCompass"> Draw Compass</label>
+			</div>
 			
 			<div v-for="(moonParameters, index) in moonsParameters">
 				<h6>{{moonParameters.name}}</h6>
@@ -32,32 +69,6 @@
 				></ControlMoonParameters>
 			</div>
 			
-			<!--
-		
-			
-			<InputRange
-				v-model="cfg.obliquity"
-				label="Obliquity"
-				:min="-90"
-				:max="90"
-				:step="0.5"
-				units="deg"
-				:fraction-digits="1"
-				@input="$emit('update:obliquity')"
-			></InputRange>
-			
-			
-			<div style="text-align: left; width:100px; margin: 0 auto;">
-				<label><input type="checkbox" v-model="cfg.shouldDrawHorizon"> Draw Horizon</label>
-				<br>
-				<label><input type="checkbox" v-model="cfg.shouldDrawSky"> Draw Sky</label>
-				<br>
-				<label><input type="checkbox" v-model="cfg.shouldDrawCompass"> Draw Compass</label>
-			</div>
-			
-			
-			</div>
-			-->
 		</div>
 	</div>
 </template>
@@ -99,6 +110,19 @@
 				required: false,
 				default: [],
 			},
+			
+			miscConfig: {
+				type: Object,
+				default: {
+					localLongitude: -111.01908142663117,
+					localLatitude: 32.198840114469995,
+					obliquity: 23.4393,
+					
+					shouldDrawHorizon: true,
+					shouldDrawSky: true,
+					shouldDrawCompass: true,
+				}
+			},
 		},
 		
 		setup() {
@@ -127,8 +151,9 @@
 		},
 		
 		methods: {
-			loop() {
-			},
+			logCurrentParams() {
+				console.log({julianDate: this.julianDate, viewport: this.viewport, moonsParameters: this.moonsParameters, miscConfig: this.miscConfig});
+			}
 		},
 	}
 </script>
@@ -139,7 +164,7 @@
 		bottom: 0;
 		left: 5vw;
 		right: 5vw;
-		max-height: 300px;
+		max-height: 350px;
 		max-width: 80vw;
 		z-index: 999;
 	}

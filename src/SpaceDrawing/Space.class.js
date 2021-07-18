@@ -116,7 +116,7 @@ class Space {
 		this.drawMoons();
 		if (shouldDrawCompass) { this.drawCompass(); }
 		
-		this.drawDebug();
+		// this.drawDebug();
 	}
 	
 	

@@ -13,12 +13,14 @@
 		v-model:julian-date="julianDate"
 		v-model:viewport="viewport"
 		v-model:moons-parameters="moonsParameters"
+		v-model:misc-config="miscConfig"
 	></GroundControls>
 	
 	<Planetarium
 		:julian-date="julianDate"
 		:moons-parameters="moonsParameters"
 		:viewport="viewport"
+		:misc-config="miscConfig"
 	></Planetarium>
 </template>
 
@@ -34,6 +36,16 @@
 		
 		data() {
 			return {
+				miscConfig: {
+					localLongitude: -111.01908142663117,
+					localLatitude: 32.198840114469995,
+					obliquity: 23.4393,
+					
+					shouldDrawHorizon: true,
+					shouldDrawSky: true,
+					shouldDrawCompass: true,
+				},
+				
 				moonsParameters: [
 					/*{
 						name: 'Moon', // Earth's Moon
@@ -81,23 +93,6 @@
 					top:     90,
 					left:   -180,
 					right:   180,
-				},
-				
-				localLongitude: -111.01908142663117,
-				localLatitude: 32.198840114469995,
-				
-				config: {
-					obliquity: 0,
-					
-					shouldDrawHorizon: true,
-					shouldDrawSky: true,
-					shouldDrawCompass: true,
-					moonParams: [],
-					
-					isAuto: true,
-					autoRate: 0.001,
-					
-					intervalIds: [],
 				},
 			}
 		},

@@ -48,6 +48,16 @@
 				default: [],
 				required: false,
 			},
+			
+			miscConfig: {
+				localLongitude: -111.01908142663117,
+				localLatitude: 32.198840114469995,
+				obliquity: 23.4393,
+				
+				shouldDrawHorizon: true,
+				shouldDrawSky: true,
+				shouldDrawCompass: true,
+			},
 		},
 		
 		data() {
@@ -92,14 +102,37 @@
 				handler() {
 					if (this.space && this.space.replaceMoons) {
 						this.space.replaceMoons(this.moonsParameters);
+						this.setMiscConfig();
 						this.draw();
 					}
+				},
+				deep: true,
+			},
+			
+			miscConfig: {
+				handler() {
+					this.setMiscConfig();
+					this.draw();
 				},
 				deep: true,
 			},
 		},
 		
 		methods: {
+			/**
+			 * @since 2021-07-18
+			 */
+			setMiscConfig() {
+				console.log(this.miscConfig);
+				([this.space.sun, ...this.space.moons, ...this.space.planets]).forEach((ob) => {
+					ob.azi.siderealTime.localLongitude_deg = this.miscConfig.localLongitude;
+					ob.azi.siderealTime.localLatitude_deg = this.miscConfig.localLatitude;
+					ob.ecl_param[0] = this.miscConfig.obliquity;
+				});
+			},
+			
+			
+			
 			/**
 			 * @since 2021-07-15
 			 */
@@ -127,18 +160,13 @@
 				this.space = space;
 			},
 			
-			setObliquity() {
-				// TODO.
-				// ecl_param = [23.4393, -3.563E-7]
-			},
-			
 			
 			/**
 			 * @since 2021-07-15
 			 */
 			draw() {
 				if (this.space) {
-					this.space.draw();
+					this.space.draw(this.miscConfig.shouldDrawHorizon, this.miscConfig.shouldDrawSky, this.miscConfig.shouldDrawCompass);
 				}
 			}
 		},
