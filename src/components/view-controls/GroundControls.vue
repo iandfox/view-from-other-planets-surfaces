@@ -13,10 +13,6 @@
 -->
 
 <template>
-	<!-- TODO 2021-07-15: delete-->
-	<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
-	
-	
 	<div class="controls-wrapper">
 		<div :class="{controls: true, hide: cfg.areControlsHidden}">
 			<button class="show-hide tiny button" @click="cfg.areControlsHidden = ! cfg.areControlsHidden">Show/Hide Controls</button>
@@ -30,6 +26,7 @@
 			></ControlViewport>
 			
 			<div v-for="(moonParameters, index) in moonsParameters">
+				<h6>{{moonParameters.name}}</h6>
 				<ControlMoonParameters
 					v-model:moon-parameters="moonsParameters[index]"
 				></ControlMoonParameters>
@@ -63,17 +60,6 @@
 			-->
 		</div>
 	</div>
-	
-	
-	<teleport to="#debug">
-		<h5>GroundControls Params</h5>
-		<p><small>
-			<em><code>[P]</code>: prop</em><br>
-		</small></p>
-		<dl>
-			<dt>JD</dt><dd>[P] {{format(julianDate)}}</dd>
-		</dl>
-	</teleport>
 </template>
 
 <script>
@@ -182,5 +168,15 @@
 	}
 	
 	.show-hide {
+	}
+	
+	
+	.controls-wrapper {
+		transition: all 10s ease;
+		opacity: 0.05;
+	}
+	.controls-wrapper:hover {
+		transition: all 1s ease;
+		opacity: 1;
 	}
 </style>

@@ -1,6 +1,17 @@
 /**
  * SunOrbitalBody
  *
+ * /**
+ * Trying this a third time (ugh), this time from the book Astronomical Algorithms. Chapter 25 is Solar Coordinates, chapter 24 is maybe related, chapter 45 is the moon.
+ *
+ * No, not chapter 45. chapter 49 gives phases of the moon, though.
+ *
+ * this article suggested the book: https://celestrak.com/columns/v03n03/
+ *
+ * @since 2021-04-23
+ 
+ *
+ *
  * @since 2021-07-13
  */
 import {BaseOrbitalBody} from './BaseOrbitalBody.class.js';

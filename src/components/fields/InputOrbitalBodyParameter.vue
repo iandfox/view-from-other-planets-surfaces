@@ -85,8 +85,10 @@
 	.param {
 		display: grid;
 		grid-template-areas: "slug left right";
-		grid-template-columns: 20px 1fr 1fr;
+		grid-template-columns: 20px 1fr;
 		align-items: center;
+		position: relative;
+		background: #bbb;
 	}
 	
 	.slug {
@@ -99,8 +101,15 @@
 		overflow: hidden;
 		transition: all 0.2s ease;
 		
+		position: relative;
+		
+		z-index: 0;
+		&:hover {
+			z-index: 10;
+		}
+		
 		&.left {
-			border: solid 1px red;
+			--size: 100px;
 			grid-area: left;
 			clip-path: polygon(0 0, var(--size) 0, var(--size) 100%, 0 100%);
 			text-align: left;
@@ -109,13 +118,21 @@
 			}
 		}
 		&.right {
-			border: solid 1px blue;
 			grid-area: right;
 			clip-path: polygon(calc(100% - var(--size)) 0, 100% 0, 100% 100%, calc(100% - var(--size)) 100%);
 			text-align: right;
+			position: absolute;
+			right: 0;
+			top: 0;
+			bottom: 0;
 			&:hover {
 				clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 			}
+		}
+		
+		
+		&.left:hover ~ .right {
+			z-index: -10;
 		}
 		
 		.value {}

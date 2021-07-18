@@ -18,51 +18,6 @@
 		<canvas width="1600" height="800" id="space" ref="spaceCanvas"></canvas>
 		<canvas width="1600" height="800" id="ground" ref="groundCanvas"></canvas>
 	</div>
-	
-	
-	
-	<!-- TODO 2021-07-15: delete -->
-	<teleport to="#debug">
-		<h5>Planetarium Params</h5>
-		<p><small>
-			<em><code>[P]</code>: prop</em><br>
-		</small></p>
-		<dl>
-			<dt>JD</dt><dd>[P] {{format(julianDate)}}</dd>
-			<dt style="align-self: center">Viewport</dt><dd><pre style="text-align: left; border-left: none;"> _______________
-|       {{viewport.top}}
-| {{viewport.left}}      {{viewport.right}}
-|      {{viewport.bottom}}
- ---------------
-</pre></dd>
-			<dt></dt><dd>{{}}</dd>
-			<dt></dt><dd>{{}}</dd>
-		</dl>
-	</teleport>
-	
-	<teleport to="#debug">
-		<h5><code>Space</code> Params</h5>
-		<p><small>
-			<em><code>[P]</code>: prop</em><br>
-		</small></p>
-		<dl v-if="space">
-			<dt>JD</dt><dd>{{format(space.JD)}}</dd>
-			<dt style="align-self: center">Viewport</dt><dd v-if="space.viewport"><pre style="text-align: left; border-left: none;"> _______________
-|       {{space.viewport.top}}
-| {{space.viewport.left}}      {{space.viewport.right}}
-|      {{space.viewport.bottom}}
- ---------------
-</pre></dd><dd v-else><code>space.viewport</code> not found</dd>
-			<dt></dt><dd>{{}}</dd>
-			<dt></dt><dd>{{}}</dd>
-		</dl>
-		<p v-else><code>space</code> is not yet loaded. <code>space = {{space}}</code></p>
-	</teleport>
-	
-	<teleport to="#debug-params">
-		<h5>Planetarium's Moons Parameters</h5>
-		<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
-	</teleport>
 </template>
 <script>
 	import { onMounted, reactive, ref, watch } from 'vue';
@@ -111,9 +66,12 @@
 			const moons = ref([]);
 			const planets = ref([]);
 			
-			watch(props.moonsParameters, (newValue, oldValue) => {
+			watch(props.moonsParameters, (newParams, oldValue) => {
 				// TODO
-				console.log('moonsParameters has changed', {newValue, oldValue}); // TODO delete
+				// newParams.forEach((params, index) => {
+				// 	moons.value[index].params = params;
+				// });
+				// TODO delete
 				// TODO: alter moon params or add new moon or something.
 			});
 			
@@ -134,7 +92,7 @@
 		
 		watch: {
 			julianDate(jd) {
-				if (this.space) {
+				if (this.space && this.space.JD) {
 					this.space.JD = jd;
 					this.draw();
 				}

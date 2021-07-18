@@ -13,8 +13,9 @@
 
 <template>
 	<div>
-		<label v-if="label">{{label}}</label>
-		<input type="datetime-local" style="width: 34ch;" v-model="datetime">
+		<label>Date:</label> <input type="date" style="width: 34ch;" v-model="date" @input="parseDateAndTime">
+		<br>
+		<label>Time:</label> <input type="time" style="width: 34ch;" v-model="time" @input="parseDateAndTime">
 		<div class="vcr">
 			<button @click="stepBack()"><i class="fa fa-chevron-left"></i></button>
 			<button @click="toggleAuto()"><i class="fa fa-pause" v-if="isAuto"></i><i class="fa fa-play" v-else></i></button>
@@ -28,6 +29,7 @@
 <script>
 	import {JulianDate} from '../../calculations/Utils/JulianDate.class';
 	import useNumberFormat from '../../composables/useNumberFormat';
+	import moment from 'moment';
 	
 	export default {
 		name: 'InputJulianDate',
@@ -41,8 +43,10 @@
 		
 		data() {
 			return {
-				_datetime: '', // having this helps with reactivity
-				helper: new JulianDate(this.modelValue),
+				date: '2021-07-16',
+				time: '00:00',
+				
+				helper: new JulianDate(0),
 				isAuto: false,
 				autoIntervalId: 0,
 				step: 0.01, // in days
@@ -58,11 +62,9 @@
 		
 		mounted() {
 			// set the initial value
-			this._datetime = this.helper.iso;
-			
 			this.autoIntervalId = setInterval(() => {
 				if (this.isAuto) {
-					this.JD = this.JD + this.step;
+					this.stepForward();
 				}
 			}, 50);
 		},
@@ -72,53 +74,64 @@
 		},
 		
 		watch: {
-			modelValue() {
-				this.helper.JD = this.modelValue;
-				this._datetime = this.helper.iso;
+			date() {
+				const date=this.date,
+					time=this.time;
+				const datetime = date + 'T' + time + ':00-07:00';
+				this.$emit('update:modelValue', 0.5 + JulianDate.datetimeToJD(datetime));
+			},
+			time() {
+				const date=this.date,
+					time=this.time;
+				const datetime = date + 'T' + time + ':00-07:00';
+				this.$emit('update:modelValue', 0.5 + JulianDate.datetimeToJD(datetime));
 			},
 		},
 		
 		computed: {
-			JD: {
-				get() {
-					return this.modelValue;
-				},
-				set(newValue) {
-					this.$emit('update:modelValue', newValue);
-					this.helper.JD = newValue;
-				}
-			},
 			
-			datetime: {
-				get() {
-					return this._datetime;
-				},
-				set(newValue) {
-					return this.setJDFromDatetime(newValue);
-				}
-			}
+			
+			// JD: {
+			// 	get() {
+			// 		return this.modelValue;
+			// 	},
+			// 	set(newValue) {
+			// 		this.$emit('update:modelValue', newValue);
+			// 		this.helper.JD = newValue;
+			// 	}
+			// },
+			//
+			// datetime: {
+			// 	get() {
+			// 		return this._datetime;
+			// 	},
+			// 	set(newValue) {
+			// 		return this.setJDFromDatetime(newValue);
+			// 	}
+			// }
 		},
 		
 		methods: {
-			setJDFromDatetime(datetime) {
-				// `datetime` has format: 2021-07-16T12:19
-				if (datetime) {
-					const Y = parseInt(datetime.substr(0, 4));
-					const M = parseInt(datetime.substr(5, 2));
-					const D = parseInt(datetime.substr(8, 2));
-					const H = parseInt(datetime.substr(11, 2));
-					const m = parseInt(datetime.substr(14, 2));
-					const JD = this.helper.fromDate(Y, M, D, H, m);
-					this.$emit('update:modelValue', JD);
-				}
+			parseDateAndTime() {
+				// const datetime = this.date + 'T' + this.time;
+				// const epoch = Date.parse(datetime) / 1000;
+				// const jd = this.helper.fromEpoch(epoch);
+				// console.log('parseDateAndTime Results:', {
+				// 	datetime,
+				// 	jd,
+				// 	'Date.parse(datetime)/1000 (the epoch)': Date.parse(datetime) / 1000,
+				// 	'what if we made a (new JulianDate(jd)).iso': (new JulianDate(jd).iso)
+				// });
+				// this.$emit('update:modelValue', jd);
+				// this.JD = jd;
 			},
 			
 			stepBack(scl = 1) {
-				this.JD = this.JD - (scl * this.step);
+				this.$emit('update:modelValue', this.modelValue - (scl * this.step));
 			},
 			
 			stepForward(scl = 1) {
-				this.JD = this.JD + (scl * this.step);
+				this.$emit('update:modelValue', this.modelValue + (scl * this.step));
 			},
 			
 			toggleAuto() {

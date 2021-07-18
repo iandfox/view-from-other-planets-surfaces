@@ -9,33 +9,6 @@
 -->
 
 <template>
-	<!-- TODO 2021-07-15: delete -->
-	<div id="debug">
-		<h5>ViewFromGround Params</h5>
-		<dl>
-			<dt>JD</dt><dd>{{format(julianDate)}}</dd>
-			<dt style="align-self: center">Viewport</dt><dd>
-<pre style="text-align: left; border-left: none;"> _______________
-|       {{viewport.top}}
-| {{viewport.left}}      {{viewport.right}}
-|      {{viewport.bottom}}
- ---------------
-</pre>
-			</dd>
-			<dt>localLongitude</dt><dd>{{format(localLongitude)}}</dd>
-			<dt>localLatitude</dt><dd>{{format(localLatitude)}}</dd>
-			<!--<dt></dt><dd>{{}}</dd>-->
-			<!--<dt></dt><dd>{{}}</dd>-->
-		</dl>
-	</div>
-	<teleport to="#debug">
-		<h5>ViewFromGround's Moons Parameters</h5>
-		<div id="debug-params">
-			<DebugMoonsParameters :moons-parameters="moonsParameters"></DebugMoonsParameters>
-		</div>
-	</teleport>
-	
-	
 	<GroundControls
 		v-model:julian-date="julianDate"
 		v-model:viewport="viewport"
@@ -62,7 +35,7 @@
 		data() {
 			return {
 				moonsParameters: [
-					{
+					/*{
 						name: 'Moon', // Earth's Moon
 						color: 'grey',
 						radius: 28,
@@ -72,7 +45,7 @@
 						a: [60.2666, 0], // in Earth radii
 						e: [0.054900, 0],
 						M: [115.3654, 13.0649929509],
-					},
+					},*/
 					{
 						name: 'F\'an',
 						color: 'orange',

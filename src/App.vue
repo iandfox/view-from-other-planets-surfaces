@@ -1,5 +1,5 @@
 <template>
-	<div id="nav">
+	<div id="nav" style="display: none;">
 		<router-link to="/">Home</router-link>
 		|
 		<router-link to="/sun">Sun</router-link>
@@ -11,8 +11,6 @@
 		<router-link to="/moon">Moon</router-link>
 	</div>
 	<router-view/>
-	
-	<div id="floating-controls"></div>
 </template>
 
 <style lang="less">
