@@ -39,6 +39,8 @@ class Space {
 		
 		this.drawing = new Drawing(this.canvas, {x: 0, y: 0}, this.viewport);
 		
+		this.drawStars(this.starsCanvas, this.starsCanvas.getContext('2d'));
+		
 		// TODO 2021-07-13: make the stars rotate
 	}
 	
@@ -85,6 +87,16 @@ class Space {
 		moon.azi = moon.azi ? moon.azi : new AzimuthalCoordinates(moon, this.sun);
 		this.moons.push(moon);
 		return moon;
+	}
+	
+	replaceMoons(moonsParameters) {
+		this.moons = [];
+		moonsParameters.forEach((moonParameters) => {
+			const color = moonParameters.color ? moonParameters.color : 'grey';
+			const radius = moonParameters.radius ? moonParameters.radius : 20;
+			const name = moonParameters.name ? moonParameters.name : 'Unnamed re-Moon';
+			this.addMoon(moonParameters, color, radius, name);
+		});
 	}
 	
 	
@@ -167,6 +179,8 @@ class Space {
 		}
 		
 		this.stars.forEach((star) => {
+			ctx.fillStyle = star.color;
+			// ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
 			this.drawing.circle(star.x, star.y, star.radius, star.color, canvas, ctx);
 		});
 		
@@ -241,7 +255,7 @@ class Space {
 			0,
 			this.viewport.right,
 			this.viewport.bottom,
-			'rgba(0, 200, 0, 0.3)',
+			'rgba(0, 100, 0, 0.6)',
 			canvas,
 			ctx
 		);

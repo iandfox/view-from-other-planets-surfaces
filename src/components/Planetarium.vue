@@ -66,16 +66,6 @@
 			const moons = ref([]);
 			const planets = ref([]);
 			
-			watch(props.moonsParameters, (newParams, oldValue) => {
-				// TODO
-				// newParams.forEach((params, index) => {
-				// 	moons.value[index].params = params;
-				// });
-				// TODO delete
-				// TODO: alter moon params or add new moon or something.
-			});
-			
-			
 			return {
 				format,
 				sun,
@@ -96,6 +86,16 @@
 					this.space.JD = jd;
 					this.draw();
 				}
+			},
+			
+			moonsParameters: {
+				handler() {
+					if (this.space && this.space.replaceMoons) {
+						this.space.replaceMoons(this.moonsParameters);
+						this.draw();
+					}
+				},
+				deep: true,
 			},
 		},
 		
