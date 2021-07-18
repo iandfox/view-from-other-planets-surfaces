@@ -29,6 +29,7 @@
 	import Planetarium from './Planetarium';
 	import useNumberFormat from '../composables/useNumberFormat';
 	import DebugMoonsParameters from './DebugMoonsParameters';
+	import Debug3dDrawing from './Debug3dDrawing';
 	
 	export default {
 		name: 'ViewFromGround',

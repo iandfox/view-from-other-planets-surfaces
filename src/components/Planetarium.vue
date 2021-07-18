@@ -18,6 +18,9 @@
 		<canvas width="1600" height="800" id="space" ref="spaceCanvas"></canvas>
 		<canvas width="1600" height="800" id="ground" ref="groundCanvas"></canvas>
 	</div>
+	
+	
+	<Debug3dDrawing :space="space"></Debug3dDrawing>
 </template>
 <script>
 	import { onMounted, reactive, ref, watch } from 'vue';
@@ -25,10 +28,11 @@
 	import {Space} from '../SpaceDrawing/Space.class';
 	import useNumberFormat from '../composables/useNumberFormat';
 	import DebugMoonsParameters from './DebugMoonsParameters';
+	import Debug3dDrawing from './Debug3dDrawing';
 	
 	export default {
 		name: 'Planetarium',
-		components: {DebugMoonsParameters},
+		components: {Debug3dDrawing, DebugMoonsParameters},
 		props: {
 			julianDate: {
 				type: Number,
@@ -175,7 +179,7 @@
 <style scoped>
 	.space {}
 	
-	canvas {
+	canvas#stars, canvas#space, canvas#ground {
 		position: fixed;
 		top: 0;
 		right: 0;
