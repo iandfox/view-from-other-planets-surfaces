@@ -127,6 +127,11 @@
 				this.space = space;
 			},
 			
+			setObliquity() {
+				// TODO.
+				// ecl_param = [23.4393, -3.563E-7]
+			},
+			
 			
 			/**
 			 * @since 2021-07-15
