@@ -24,7 +24,7 @@ const to2d = (x, y, z, perspectiveAngle_deg = 45) => {
 	// Cabinet projection
 	return {
 		x: x + 0.5 * z * Math.cos(perspectiveAngle),
-		y: x + 0.5 * z * Math.sin(perspectiveAngle),
+		y: y + 0.5 * z * Math.sin(perspectiveAngle),
 		z: 0 // we'll usually ignore this term but may as well return a Vector3, i guess
 	}
 };

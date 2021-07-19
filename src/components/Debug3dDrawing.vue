@@ -11,16 +11,25 @@
 -->
 
 <template>
-	<!--<canvas id="drawing3d" ref="3d-drawing" width="400" height="400"></canvas>-->
+	<div id="drawing3d">
+		<canvas id="" ref="3d-drawing" width="400" height="400"></canvas>
+		<InputRange
+			v-model="perspectiveAngle"
+			label="Perspective Angle"
+			:min="-180"
+			:max="180"
+		></InputRange>
+	</div>
 </template>
 
 <script>
 	import {Drawing} from '../calculations/Drawing.class';
 	import { to2d } from '../calculations/Drawing3DProjections';
+	import InputRange from './fields/InputRange';
 	
 	export default {
 		name: 'Debug3dDrawing',
-		
+		components: {InputRange},
 		props: {
 			space: Object,
 		},
@@ -32,6 +41,7 @@
 				
 				tails: [],
 				maxTailLength: 100,
+				perspectiveAngle: 30,
 			};
 		},
 		
@@ -51,18 +61,12 @@
 						bodies.forEach((ob, index) => {
 							if (! this.tails[index]) { this.tails[index] = []; }
 							const {x, y, z} = ob.equatorialCoordinates;
-							const {x: x2d, y: y2d} = to2d(x, y, z);
 							
 							// Track the tail
-							this.tails[index].unshift({x: x2d, y: y2d});
-							console.log(this.tails);
+							this.tails[index].unshift(to2d(x, y, z, this.perspectiveAngle));
 							if (this.tails[index].length > this.maxTailLength) {
 								this.tails[index].pop();
 							}
-							this.tails[index].forEach((tail, tailIndex) => {
-								console.log(tail);
-								this.drawing.circle(tail.x, tail.y, 1, ob.color);
-							});
 						});
 					}
 					
@@ -81,22 +85,54 @@
 					);
 					this.drawing.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 					
-					const {x: z_x, y: z_y} = to2d(0, 0, 1);
-					const {x: z_n_x, y: z_n_y} = to2d(0, 0, -1);
+					const axes = {
+						x: {
+							start: to2d(-1, 0, 0, this.perspectiveAngle),
+							end:   to2d(1, 0, 0, this.perspectiveAngle),
+						},
+						y: {
+							start: to2d(0, -1, 0, this.perspectiveAngle),
+							end:   to2d(0, 1, 0, this.perspectiveAngle),
+						},
+						z: {
+							start: to2d(0, 0, -1, this.perspectiveAngle),
+							end:   to2d(0, 0, 1, this.perspectiveAngle),
+						}
+					};
 					
-					// x1_s, y1_s, x2_s, y2_s, color = 'white', lineWidth = 1, canvas = this.canvas, ctx = this.ctx
 					// Draw axes
-					this.drawing.line(z_n_x, z_n_y, z_x, z_y, 'white');
+					this.drawing.line(axes.x.start.x, axes.x.start.y, axes.x.end.x, axes.x.end.y, 'white');
+					this.drawing.line(axes.y.start.x, axes.y.start.y, axes.y.end.x, axes.y.end.y, 'white');
+					this.drawing.line(axes.z.start.x, axes.z.start.y, axes.z.end.x, axes.z.end.y, 'white');
 					
-					this.drawing.circle(0, 0, 10, 'teal');
+					this.drawing.circle(0, 0, 10, 'skyblue');
 					
 					bodies.forEach((ob, index) => {
 						const {x, y, z} = ob.equatorialCoordinates;
-						const {x: x2d, y: y2d} = to2d(x, y, z);
+						const {x: x2d, y: y2d} = to2d(x, y, z, this.perspectiveAngle);
+						
+						// Draw a line from object to xy-plane
+						const {x: plane_x2d, y: plane_y2d} = to2d(x, 0, z, this.perspectiveAngle);
+						this.globalAlpha = 0.5;
+						this.drawing.line(x2d, y2d, plane_x2d, plane_y2d, 'yellow');
+						this.globalAlpha = 1;
 						
 						// Draw the body
-						this.drawing.circle(x, y, 5, ob.color);
+						this.drawing.circle(x2d, y2d, 5, ob.color);
 					});
+					
+					
+					bodies.forEach((ob, index) => {
+						this.drawing.ctx.globalAlpha = 1 - (index / this.maxTailLength);
+						if (this.tails[index]) {
+							this.tails[index].forEach((tail, tailIndex) => {
+								this.drawing.circle(tail.x, tail.y, 1, ob.color);
+							});
+						}
+					});
+					// Reset alpha
+					this.drawing.ctx.globalAlpha = 1;
+					
 				}
 			},
 		},

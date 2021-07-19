@@ -13,14 +13,14 @@
 -->
 
 <template>
-	<div class="space">
+	<div class="space" @click="show3dDrawing = ! show3dDrawing">
 		<canvas width="1600" height="800" id="stars" ref="starsCanvas"></canvas>
 		<canvas width="1600" height="800" id="space" ref="spaceCanvas"></canvas>
 		<canvas width="1600" height="800" id="ground" ref="groundCanvas"></canvas>
 	</div>
 	
 	
-	<Debug3dDrawing :space="space"></Debug3dDrawing>
+	<Debug3dDrawing v-show="show3dDrawing" :space="space"></Debug3dDrawing>
 </template>
 <script>
 	import { onMounted, reactive, ref, watch } from 'vue';
@@ -70,6 +70,7 @@
 				
 				// TODO 2021-07-15: delete
 				debug_activeTabIndex: 0,
+				show3dDrawing: true,
 			}
 		},
 		
@@ -91,14 +92,14 @@
 		mounted() {
 			// Set up `Space` once we can access DOM
 			this.initSpace();
-			this.draw();
+			this.loop_draw();
 		},
 		
 		watch: {
 			julianDate(jd) {
 				if (this.space && this.space.JD) {
 					this.space.JD = jd;
-					this.draw();
+					// this.draw();
 				}
 			},
 			
@@ -107,7 +108,7 @@
 					if (this.space && this.space.replaceMoons) {
 						this.space.replaceMoons(this.moonsParameters);
 						this.setMiscConfig();
-						this.draw();
+						// this.draw();
 					}
 				},
 				deep: true,
@@ -116,7 +117,7 @@
 			miscConfig: {
 				handler() {
 					this.setMiscConfig();
-					this.draw();
+					// this.draw();
 				},
 				deep: true,
 			},
@@ -127,7 +128,6 @@
 			 * @since 2021-07-18
 			 */
 			setMiscConfig() {
-				console.log(this.miscConfig);
 				([this.space.sun, ...this.space.moons, ...this.space.planets]).forEach((ob) => {
 					ob.azi.siderealTime.localLongitude_deg = this.miscConfig.localLongitude;
 					ob.azi.siderealTime.localLatitude_deg = this.miscConfig.localLatitude;
@@ -172,6 +172,13 @@
 				if (this.space) {
 					this.space.draw(this.miscConfig.shouldDrawHorizon, this.miscConfig.shouldDrawSky, this.miscConfig.shouldDrawCompass);
 				}
+			},
+			
+			loop_draw() {
+				this.draw();
+				requestAnimationFrame(() => {
+					this.loop_draw()
+				});
 			}
 		},
 	}
