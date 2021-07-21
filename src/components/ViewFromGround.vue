@@ -16,12 +16,19 @@
 		v-model:misc-config="miscConfig"
 	></GroundControls>
 	
-	<Planetarium
+	<!--<Planetarium
 		:julian-date="julianDate"
 		:moons-parameters="moonsParameters"
 		:viewport="viewport"
 		:misc-config="miscConfig"
-	></Planetarium>
+	></Planetarium>-->
+	
+	<OrbitViz
+		:julian-date="julianDate"
+		:moons-parameters="moonsParameters"
+		:viewport="{left: -1, right: 1, top: 1, bottom: -1}"
+		:misc-config="miscConfig"
+	></OrbitViz>
 </template>
 
 <script>
@@ -30,10 +37,11 @@
 	import useNumberFormat from '../composables/useNumberFormat';
 	import DebugMoonsParameters from './DebugMoonsParameters';
 	import Debug3dDrawing from './Debug3dDrawing';
+	import OrbitViz from './OrbitViz';
 	
 	export default {
 		name: 'ViewFromGround',
-		components: {DebugMoonsParameters, Planetarium, GroundControls},
+		components: {OrbitViz, DebugMoonsParameters, Planetarium, GroundControls},
 		
 		data() {
 			return {
@@ -45,6 +53,11 @@
 					shouldDrawHorizon: true,
 					shouldDrawSky: true,
 					shouldDrawCompass: true,
+					
+					// used for OrbitViz:
+					jdMin: 2459404.5,
+					jdMax: 2459434.5,
+					jdStep: 0.1,
 				},
 				
 				moonsParameters: [

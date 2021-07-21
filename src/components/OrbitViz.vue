@@ -1,38 +1,47 @@
 <!--
- - Vue Component: Planetarium
+ - Vue Component: OrbitViz
  -
  -     Example usage:
- -         <Planetarium
+ -         <OrbitViz
  -             :julian-date="julianDate"
  -             :viewport="viewport"
  -             :moons-parameters="moonsParameters"
  -             :planets-parameters="planetsParameters"
- -         ></Planetarium>
+ -         ></OrbitViz>
  -
  - @created 2021-07-15
 -->
 
 <template>
-	<div class="space" @click="show3dDrawing = ! show3dDrawing">
-		<canvas width="1600" height="800" id="stars" ref="starsCanvas"></canvas>
-		<canvas width="1600" height="800" id="space" ref="spaceCanvas"></canvas>
-		<canvas width="1600" height="800" id="ground" ref="groundCanvas"></canvas>
+	<div class="space">
+		<!--<canvas width="1600" height="800" id="stars" ref="starsCanvas"></canvas>-->
+		<canvas width="800" height="800" id="space" ref="canvas"></canvas>
+		<!--<canvas width="1600" height="800" id="ground" ref="groundCanvas"></canvas>-->
 	</div>
 	
+	<div style="position: relative; z-index: 999; background: white; display: inline-block;">
+		JD Min: <input type="number" v-model.number="miscConfig.jdMin">
+		<br>
+		JD Max: <input type="number" v-model.number="miscConfig.jdMax">
+		<br>
+		JD Step: <input type="number" v-model.number="miscConfig.jdStep">
+		<br>
+		<button @click="stepDraw()">Step Draw</button>
+	</div>
 	
-	<Debug3dDrawing v-show="show3dDrawing" :space="space"></Debug3dDrawing>
 </template>
 <script>
 	import { onMounted, reactive, ref, watch } from 'vue';
 	import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
-	import {SpacePlanetarium} from '../SpaceDrawing/SpacePlanetarium.class';
+	import {SpaceOrbitViz} from '../SpaceDrawing/SpaceOrbitViz.class';
 	import useNumberFormat from '../composables/useNumberFormat';
 	import DebugMoonsParameters from './DebugMoonsParameters';
 	import Debug3dDrawing from './Debug3dDrawing';
+	import InputRange from './fields/InputRange';
 	
 	export default {
-		name: 'Planetarium',
-		components: {Debug3dDrawing, DebugMoonsParameters},
+		name: 'OrbitViz',
+		components: {InputRange, Debug3dDrawing, DebugMoonsParameters},
 		props: {
 			julianDate: {
 				type: Number,
@@ -61,6 +70,10 @@
 				shouldDrawHorizon: true,
 				shouldDrawSky: true,
 				shouldDrawCompass: true,
+				
+				jdMin: 2459404.5,
+				jdMax: 2459405.5,
+				jdStep: 0.1,
 			},
 		},
 		
@@ -90,7 +103,7 @@
 		},
 		
 		mounted() {
-			// Set up `SpacePlanetarium` once we can access DOM
+			// Set up `SpaceOrbitViz` once we can access DOM
 			this.initSpace();
 			this.loop_draw();
 		},
@@ -99,7 +112,7 @@
 			julianDate(jd) {
 				if (this.space && this.space.JD) {
 					this.space.JD = jd;
-					// this.draw();
+					this.draw();
 				}
 			},
 			
@@ -108,7 +121,7 @@
 					if (this.space && this.space.replaceMoons) {
 						this.space.replaceMoons(this.moonsParameters);
 						this.setMiscConfig();
-						// this.draw();
+						this.draw();
 					}
 				},
 				deep: true,
@@ -117,7 +130,7 @@
 			miscConfig: {
 				handler() {
 					this.setMiscConfig();
-					// this.draw();
+					this.draw();
 				},
 				deep: true,
 			},
@@ -141,15 +154,12 @@
 			 * @since 2021-07-15
 			 */
 			initSpace() {
-				const starsCanvas = this.$refs['starsCanvas'];
-				const spaceCanvas = this.$refs['spaceCanvas'];
-				const groundCanvas = this.$refs['groundCanvas'];
-				const space = new SpacePlanetarium(
-					starsCanvas,
-					spaceCanvas,
-					groundCanvas,
+				// const starsCanvas = this.$refs['starsCanvas'];
+				const canvas = this.$refs['canvas'];
+				const space = new SpaceOrbitViz(
 					this.viewport,
-					this.julianDate
+					this.miscConfig.jdMax,
+					canvas
 				);
 				
 				space.addSun();
@@ -170,21 +180,33 @@
 			 */
 			draw() {
 				if (this.space) {
-					this.space.draw(this.miscConfig.shouldDrawHorizon, this.miscConfig.shouldDrawSky, this.miscConfig.shouldDrawCompass);
+					console.log(`OrbitViz is drawing from ${this.miscConfig.jdMin} to ${this.miscConfig.jdMax} by ${this.miscConfig.jdStep}`);
+					this.space.draw(this.miscConfig.jdMin, this.miscConfig.jdMax, this.miscConfig.jdStep, true, 0.2);
 				}
+			},
+			
+			/**
+			 * @since 2021-07-21
+			 */
+			stepDraw() {
+				this.space.drawState(this.space.JD + this.miscConfig.jdStep, 0.2, true);
 			},
 			
 			loop_draw() {
 				this.draw();
-				requestAnimationFrame(() => {
-					this.loop_draw()
-				});
+				// requestAnimationFrame(() => {
+				// 	this.loop_draw()
+				// });
 			}
 		},
 	}
 </script>
 <style scoped>
 	.space {}
+	
+	canvas {
+		border: solid 2px red;
+	}
 	
 	canvas#stars, canvas#space, canvas#ground {
 		position: fixed;

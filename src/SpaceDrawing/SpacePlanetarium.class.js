@@ -1,5 +1,5 @@
 /**
- * Space
+ * SpacePlanetarium
  *     The Final JS Class
  *
  * @since 2021-07-13
@@ -10,8 +10,9 @@ import seedrandom from 'seedrandom';
 import {Drawing} from '../calculations/Drawing.class';
 import {SunOrbitalBody} from '../calculations/OrbitalBodies/SunOrbitalBody.class';
 import {MoonOrbitalBody} from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
+import {BaseSpace} from './BaseSpace.class';
 
-class Space {
+class SpacePlanetarium extends BaseSpace {
 	
 	constructor(
 		starsCanvas,
@@ -20,6 +21,8 @@ class Space {
 		viewport,
 		JD = 2459404.5
 	) {
+		super(viewport, JD);
+		
 		/* See https://github.com/davidbau/seedrandom.
 		 * I want the stars field to be consistent, so I can start to do constellations :3
 		 */
@@ -29,12 +32,7 @@ class Space {
 		this.canvas       = spaceCanvas;
 		this.groundCanvas = groundCanvas;
 		this.ctx          = this.canvas.getContext('2d');
-		this.viewport     = viewport;
-		this._JD          = JD;
 		
-		this.sun     = null;
-		this.moons   = [];
-		this.planets = [];
 		this.stars   = [];
 		
 		this.drawing = new Drawing(this.canvas, {x: 0, y: 0}, this.viewport);
@@ -44,64 +42,13 @@ class Space {
 		// TODO 2021-07-13: make the stars rotate
 	}
 	
-	get JD() { return this._JD }
-	set JD(jd) {
-		this._JD = jd;
-		([this.sun, ...this.moons, ...this.planets]).forEach((ob) => {
-			ob.JD = jd;
-		});
-	}
 	
 	
-	/**
-	 * Add the sun. Only call this once.
-	 *
-	 * @since 2021-07-15
-	 * @return {SunOrbitalBody}
-	 */
-	addSun() {
-		const sun = new SunOrbitalBody(this.JD);
-		sun.azi = sun.azi ? sun.azi : new AzimuthalCoordinates(sun, sun);
-		this.sun = sun;
-		return this.sun;
-	}
 	
 	
-	/**
-	 * Add a moon.
-	 *
-	 * @since 2021-07-15
-	 *
-	 * @param {object} moonParameters
-	 * @param {string} color
-	 * @param {number} radius
-	 * @param {string} name
-	 * @return {MoonOrbitalBody}
-	 */
-	addMoon(moonParameters = {}, color = 'grey', radius = 20, name = 'Unnamed Moon') {
-		if (! this.sun) {
-			console.error('Cannot add a moon unless there is already a sun. Aborting.');
-			return null;
-		}
-		const moon = new MoonOrbitalBody(this.JD, moonParameters, {color, radius, name});
-		moon.azi = moon.azi ? moon.azi : new AzimuthalCoordinates(moon, this.sun);
-		this.moons.push(moon);
-		return moon;
-	}
-	
-	replaceMoons(moonsParameters) {
-		this.moons = [];
-		moonsParameters.forEach((moonParameters) => {
-			const color = moonParameters.color ? moonParameters.color : 'grey';
-			const radius = moonParameters.radius ? moonParameters.radius : 20;
-			const name = moonParameters.name ? moonParameters.name : 'Unnamed re-Moon';
-			this.addMoon(moonParameters, color, radius, name);
-		});
-	}
 	
 	
-	// TODO.
-	// addPlanet() {}
+	
 	
 	
 	/**
@@ -298,5 +245,5 @@ class Space {
 }
 
 export {
-	Space
+	SpacePlanetarium
 }

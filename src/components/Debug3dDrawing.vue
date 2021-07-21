@@ -113,9 +113,9 @@
 						
 						// Draw a line from object to xy-plane
 						const {x: plane_x2d, y: plane_y2d} = to2d(x, 0, z, this.perspectiveAngle);
-						this.globalAlpha = 0.5;
+						this.drawing.ctx.globalAlpha = 0.5;
 						this.drawing.line(x2d, y2d, plane_x2d, plane_y2d, 'yellow');
-						this.globalAlpha = 1;
+						this.drawing.ctx.globalAlpha = 1;
 						
 						// Draw the body
 						this.drawing.circle(x2d, y2d, 5, ob.color);
