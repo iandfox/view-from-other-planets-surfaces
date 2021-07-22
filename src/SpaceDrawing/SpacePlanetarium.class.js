@@ -44,24 +44,34 @@ class SpacePlanetarium extends BaseSpace {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * @since 2021-07-13
 	 */
 	draw(shouldDrawHorizon = true, shouldDrawSky = true, shouldDrawCompass = true) {
+		// console.group(); // TODO delete
+		// console.time('Planetarium Draw'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		if (shouldDrawHorizon) { this.drawHorizon(); }
+		console.log('Drew horizon'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		if (shouldDrawSky)     { this.drawSky(); }
+		console.log('Drew sky'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		this.drawSun();
+		console.log('Drew sun'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		this.drawPlanets();
+		console.log('Drew planets'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		this.drawMoons();
+		console.log('Drew moons'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
 		if (shouldDrawCompass) { this.drawCompass(); }
+		console.log('Drew compass'); // TODO delete
+		console.timeLog('Planetarium Draw'); // TODO delete
+		console.timeEnd('Planetarium Draw'); // TODO delete
+		// console.groupEnd(); // TODO delete
 		
 		// this.drawDebug();
 	}

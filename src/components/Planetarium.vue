@@ -67,10 +67,14 @@
 		data() {
 			return {
 				space: {},
+				show3dDrawing: true,
+				isDirty: true,
+				
+				// TODO 2021-07-21: delete
+				debug_lastFrame: performance.now(),
 				
 				// TODO 2021-07-15: delete
 				debug_activeTabIndex: 0,
-				show3dDrawing: true,
 			}
 		},
 		
@@ -99,7 +103,7 @@
 			julianDate(jd) {
 				if (this.space && this.space.JD) {
 					this.space.JD = jd;
-					// this.draw();
+					this.isDirty = true;
 				}
 			},
 			
@@ -108,7 +112,7 @@
 					if (this.space && this.space.replaceMoons) {
 						this.space.replaceMoons(this.moonsParameters);
 						this.setMiscConfig();
-						// this.draw();
+						this.isDirty = true;
 					}
 				},
 				deep: true,
@@ -117,7 +121,7 @@
 			miscConfig: {
 				handler() {
 					this.setMiscConfig();
-					// this.draw();
+					this.isDirty = true;
 				},
 				deep: true,
 			},
@@ -170,12 +174,21 @@
 			 */
 			draw() {
 				if (this.space) {
+					console.group('Planetarium.vue draw()');
+					console.time('Planetarium Draw'); // TODO delete
 					this.space.draw(this.miscConfig.shouldDrawHorizon, this.miscConfig.shouldDrawSky, this.miscConfig.shouldDrawCompass);
+					console.groupEnd();
 				}
 			},
 			
 			loop_draw() {
-				this.draw();
+				if (this.isDirty) {
+					this.draw();
+					this.isDirty = false;
+				}
+				window._frametime = performance.now() - this.debug_lastFrame;
+				window._fps = 1 / (window._frametime / 1000);
+				this.debug_lastFrame = performance.now();
 				requestAnimationFrame(() => {
 					this.loop_draw()
 				});

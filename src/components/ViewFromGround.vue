@@ -16,19 +16,19 @@
 		v-model:misc-config="miscConfig"
 	></GroundControls>
 	
-	<!--<Planetarium
+	<Planetarium
 		:julian-date="julianDate"
 		:moons-parameters="moonsParameters"
 		:viewport="viewport"
 		:misc-config="miscConfig"
-	></Planetarium>-->
+	></Planetarium>
 	
-	<OrbitViz
+	<!--<OrbitViz
 		:julian-date="julianDate"
 		:moons-parameters="moonsParameters"
-		:viewport="{left: -1, right: 1, top: 1, bottom: -1}"
+		:viewport="{left: -1.5, right: 1.5, top: 1.5, bottom: -1.5}"
 		:misc-config="miscConfig"
-	></OrbitViz>
+	></OrbitViz>-->
 </template>
 
 <script>
@@ -55,8 +55,8 @@
 					shouldDrawCompass: true,
 					
 					// used for OrbitViz:
-					jdMin: 2459404.5,
-					jdMax: 2459434.5,
+					jdMin: 2459404,
+					jdMax: 2459408,
 					jdStep: 0.1,
 				},
 				
@@ -72,23 +72,25 @@
 						e: [0.054900, 0],
 						M: [115.3654, 13.0649929509],
 					},*/
+					/*
 					{
 						name: 'F\'an',
 						color: 'orange',
 						radius: 15,
 						N: [125.1228, - 0.0529538083],
-						i: [5.1454, 1],
+						i: [35.1454, 0],
 						w: [318.0634, 0.1643573223],
 						a: [60.2666, 0], // in Earth radii
 						e: [0.054900, 0],
 						M: [0.3654, 53.0649929509],
 					},
+					*/
 					{
 						name: 'Gomor',
 						color: 'teal',
 						radius: 40,
 						N: [125.1228, -0.0529538083],
-						i: [5.1454, 1],
+						i: [5.1454, 0],
 						w: [8.0634, 0.1643573223],
 						a: [1.2666, 0], // in Earth radii
 						e: [0.054900, 0],

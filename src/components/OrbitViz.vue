@@ -24,9 +24,13 @@
 		<br>
 		JD Max: <input type="number" v-model.number="miscConfig.jdMax">
 		<br>
-		JD Step: <input type="number" v-model.number="miscConfig.jdStep">
+		JD Step: <input type="number" v-model.number.lazy="miscConfig.jdStep">
 		<br>
 		<button @click="stepDraw()">Step Draw</button>
+		<br>
+		<label><input type="checkbox" v-model="autoplay"> Autoplay</label>
+		<br>
+		perspective: <InputRange v-model="perspectiveAngle" :min="-90" :max="90"></InputRange>
 	</div>
 	
 </template>
@@ -71,8 +75,8 @@
 				shouldDrawSky: true,
 				shouldDrawCompass: true,
 				
-				jdMin: 2459404.5,
-				jdMax: 2459405.5,
+				jdMin: 2459404,
+				jdMax: 2459408,
 				jdStep: 0.1,
 			},
 		},
@@ -84,6 +88,11 @@
 				// TODO 2021-07-15: delete
 				debug_activeTabIndex: 0,
 				show3dDrawing: true,
+				
+				autoplay: false,
+				autoplayJDOffset: 0,
+				perspectiveAngle: 60,
+				
 			}
 		},
 		
@@ -105,10 +114,15 @@
 		mounted() {
 			// Set up `SpaceOrbitViz` once we can access DOM
 			this.initSpace();
+			this.draw();
 			this.loop_draw();
 		},
 		
 		watch: {
+			perspectiveAngle() {
+				this.space.perspectiveAngle = this.perspectiveAngle;
+			},
+			
 			julianDate(jd) {
 				if (this.space && this.space.JD) {
 					this.space.JD = jd;
@@ -180,8 +194,17 @@
 			 */
 			draw() {
 				if (this.space) {
+					if (! this.miscConfig.jdStep || this.miscConfig.jdStep < 0.000000001) {
+						return;
+					}
 					console.log(`OrbitViz is drawing from ${this.miscConfig.jdMin} to ${this.miscConfig.jdMax} by ${this.miscConfig.jdStep}`);
-					this.space.draw(this.miscConfig.jdMin, this.miscConfig.jdMax, this.miscConfig.jdStep, true, 0.2);
+					this.space.drawWithLines(
+						this.miscConfig.jdMin,
+						this.miscConfig.jdMax,
+						this.miscConfig.jdStep,
+						true, // doReset
+						0.2   // radiusScale
+					);
 				}
 			},
 			
@@ -193,20 +216,25 @@
 			},
 			
 			loop_draw() {
-				this.draw();
-				// requestAnimationFrame(() => {
-				// 	this.loop_draw()
-				// });
+				if (this.autoplay && this.miscConfig.jdStep > 0.000000001) {
+					this.space.drawWithLines(
+						this.miscConfig.jdMin + this.autoplayJDOffset,
+						this.miscConfig.jdMax + this.autoplayJDOffset,
+						this.miscConfig.jdStep,
+						true, 0.2
+					);
+					this.autoplayJDOffset += this.miscConfig.jdStep;
+				}
+				
+				requestAnimationFrame(() => {
+					this.loop_draw()
+				});
 			}
 		},
 	}
 </script>
 <style scoped>
 	.space {}
-	
-	canvas {
-		border: solid 2px red;
-	}
 	
 	canvas#stars, canvas#space, canvas#ground {
 		position: fixed;

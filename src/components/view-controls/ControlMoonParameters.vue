@@ -15,7 +15,7 @@
 		<InputOrbitalBodyParameter v-model="moonParameters.i" slug="i" :min="-90" :max="90"></InputOrbitalBodyParameter>
 		<InputOrbitalBodyParameter v-model="moonParameters.w" slug="w" :min="0" :max="360"></InputOrbitalBodyParameter>
 		<InputOrbitalBodyParameter v-model="moonParameters.a" slug="a" :min="0" :max="500"></InputOrbitalBodyParameter>
-		<InputOrbitalBodyParameter v-model="moonParameters.e" slug="e" :min="0" :max="1"></InputOrbitalBodyParameter>
+		<InputOrbitalBodyParameter v-model="moonParameters.e" slug="e" :min="0" :max="1" :step="0.01"></InputOrbitalBodyParameter>
 		<InputOrbitalBodyParameter v-model="moonParameters.M" slug="M" :min="-180" :max="180"></InputOrbitalBodyParameter>
 	</div>
 </template>
