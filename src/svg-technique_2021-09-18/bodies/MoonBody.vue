@@ -18,8 +18,8 @@
 
 <template>
 	<circle
-		:cx="moon[xKey]"
-		:cy="moon[yKey]"
+		:cx="x"
+		:cy="y"
 		:r="radius"
 		:fill="color"
 		stroke="transparent"
@@ -46,11 +46,11 @@
 			},
 			xKey: {
 				type: String,
-				default: 'RA_deg',
+				default: 'azi.az_deg',
 			},
 			yKey: {
 				type: String,
-				default: 'Decl_deg',
+				default: 'azi.alt_deg',
 			}
 		},
 		

@@ -35,18 +35,12 @@
 					<button type="button" @click="julianDate -= 1"    class="dark">-1 Day</button>
 					<button type="button" @click="julianDate -= 1/24" class="dark">-1 Hour</button>
 					
-					<input
-						type="number"
-						v-model="julianDate"
-						min="0"
-						max="99999999999"
-						step="0.00001"
-					/>
+					<JulianDateField :julian-date="julianDate"/>
 					
 					<button type="button" @click="julianDate += 1/24" class="dark">+1 Hour</button>
 					<button type="button" @click="julianDate += 1"    class="dark">+1 Day</button>
 					<button type="button" @click="julianDate += 7"    class="dark">+1 Week</button>
-					<button type="button" @click="julianDate += 4"    class="dark">+4 Weeks</button>
+					<button type="button" @click="julianDate += 28"    class="dark">+4 Weeks</button>
 					
 					<button type="button" @click="startPlaying(1/24)" title="autoplay controls: step = 1/24"><i class="fa fa-chevron-right"></i></button>
 					<button type="button" @click="startPlaying(1)" title="autoplay controls: step = 1"><i class="fa fa-forward"></i></button>
@@ -81,16 +75,16 @@
 			:sun="sun"
 			:color="'darkgoldenrod'"
 			:radius="5"
-			:x-key="'RA_deg'"
-			:y-key="'Decl_deg'"
+			:x-key="'azi.az_deg'"
+			:y-key="'azi.alt_deg'"
 		/>
 		
 		<MoonBody
 			:moon="moons[0]"
 			:color="moons[0].color"
 			:radius="moons[0].radius"
-			:x-key="'RA_deg'"
-			:y-key="'Decl_deg'"
+			:x-key="'azi.az_deg'"
+			:y-key="'azi.alt_deg'"
 		/>
 		
 		<!--
@@ -138,19 +132,20 @@
 </template>
 
 <script>
-	import { AzimuthalCoordinates } from '../calculations/Utils/AzimuthalCoordinates.class';
+	import JulianDateField          from './inputs/JulianDateField';
+	import { reactive, ref }        from 'vue';
 	import { MoonOrbitalBody }      from '../calculations/OrbitalBodies/MoonOrbitalBody.class';
+	import { SunOrbitalBody }       from '../calculations/OrbitalBodies/SunOrbitalBody.class'
+	import { AzimuthalCoordinates } from '../calculations/Utils/AzimuthalCoordinates.class';
+	import useNumberFormat          from '../composables/useNumberFormat';
 	import MoonBody                 from './bodies/MoonBody';
 	import SunBody                  from './bodies/SunBody';
-	import useNumberFormat          from '../composables/useNumberFormat';
 	import Axes                     from './gui/Axes';
-	import { reactive, ref }        from 'vue';
-	import { SunOrbitalBody }       from '../calculations/OrbitalBodies/SunOrbitalBody.class'
 	
 	export default {
 		name: 'svg-planetarium',
 		
-		components: {MoonBody, SunBody, Axes},
+		components: {JulianDateField, MoonBody, SunBody, Axes},
 		
 		setup() {
 			const { format } = useNumberFormat();
@@ -301,7 +296,6 @@
 		},
 		
 		methods: {
-			
 			startPlaying(autoplayStep = 0.1) {
 				this.config.isPlaying = true;
 				this.config.autoplayStep = autoplayStep;
@@ -332,6 +326,10 @@
 					window.clearTimeout(id);
 				});
 			},
+		},
+		
+		mounted() {
+			this.startPlaying(1/24/60); // autoplay speed of 1 minute. a pleasant default setting -- 1 hour is too fast! 1 sec = 1 min is also easy to grok, and you still can see motion
 		},
 		
 		unmounted() {
