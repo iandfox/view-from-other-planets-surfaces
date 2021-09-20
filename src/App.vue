@@ -1,6 +1,8 @@
 <template>
-	<div id="nav" style="display: none;">
+	<div id="nav" style="display: block;">
 		<router-link to="/">Home</router-link>
+		|
+		<router-link to="/svg">SVG Technique</router-link>
 		|
 		<router-link to="/sun">Sun</router-link>
 		|
@@ -23,6 +25,11 @@
 	body {
 		background: #010101;
 		color: #ccc;
+	}
+	
+	input {
+		--color-background: var(--color-dark) !important;
+		--color-text: var(--color-dark-overlay) !important;
 	}
 	
 	#app {

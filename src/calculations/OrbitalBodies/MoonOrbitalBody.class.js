@@ -36,17 +36,22 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * true anomaly (angle between position and periapsis)
 	 *
 	 * @since 2021-07-12
-	 * @return {number}
+	 * @return {{r: number, v: number}}
 	 */
 	get v_and_r() {
+		if (this.getCached('v_and_r')) { return this.getCached('v_and_r') }
+		
 		const e = this.e,
 			E = this.E,
 			x_v = Math.cos(E) - e,
 			y_v = Math.sqrt(1.0 - Math.pow(e, 2)) * Math.sin(E);
-		return {
+		
+		const out = {
 			v: Math.atan2(y_v, x_v),
 			r: Math.sqrt(Math.pow(x_v, 2) + Math.pow(y_v, 2)),
-		}
+		};
+		this.setCached('v_and_r', out);
+		return out;
 	}
 	get v() { return this.v_and_r.v }
 	get r() { return this.v_and_r.r }
@@ -55,7 +60,7 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get v_deg() {
-		return this.clampAngle(this.v * 180 / Math.PI);
+		return this.getCached('v_deg') || (this.clampAngle(this.v * 180 / Math.PI));
 	}
 	
 	
@@ -67,6 +72,8 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get E() {
+		if (this.getCached('E')) { return this.getCached('E') }
+		
 		const M_deg = this.M_deg, e = this.e;
 		const M = M_deg * Math.PI / 180;
 		const sin = Math.sin, cos = Math.cos;
@@ -82,7 +89,9 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 			}
 		}
 		
-		return E;
+		const out = E;
+		this.setCached('E', out);
+		return out;
 	}
 	
 	/**
@@ -90,7 +99,11 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {*}
 	 */
 	get E_deg() {
-		return this.clampAngle(this.E * 180 / Math.PI);
+		if (this.getCached('E_deg')) { return this.getCached('E_deg') }
+		
+		const out = this.clampAngle(this.E * 180 / Math.PI);
+		this.setCached('E_deg', out);
+		return out;
 	}
 	
 	/**
@@ -100,8 +113,13 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get RA() {
+		if (this.getCached('RA')) { return this.getCached('RA') }
+		
 		const equa = this.equatorialCoordinates;
-		return Math.atan2(equa.y, equa.x);
+		
+		const out = Math.atan2(equa.y, equa.x);
+		this.setCached('RA', out);
+		return out;
 	}
 	
 	/**
@@ -111,8 +129,13 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get Decl() {
+		if (this.getCached('Decl')) { return this.getCached('Decl') }
+		
 		const equa = this.equatorialCoordinates;
-		return Math.atan2(equa.z, Math.sqrt(Math.pow(equa.x, 2) + Math.pow(equa.y, 2)));
+		
+		const out = Math.atan2(equa.z, Math.sqrt(Math.pow(equa.x, 2) + Math.pow(equa.y, 2)));
+		this.setCached('Decl', out);
+		return out;
 	}
 	
 	
@@ -129,6 +152,8 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {object}
 	 */
 	get geocentricCoordinates() {
+		if (this.getCached('geocentricCoordinates')) { return this.getCached('geocentricCoordinates') }
+		
 		const cos = Math.cos,
 			sin = Math.sin;
 		const N = this.N_deg * Math.PI / 180,
@@ -139,11 +164,13 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 			cVW = cos(vw), sVW = sin(vw),
 			cI = cos(i),   sI = sin(i);
 		
-		return {
+		const out = {
 			x: r * ((cN * cVW) - (sN * sVW * cI)),
 			y: r * ((sN * cVW) + (cN * sVW * cI)),
 			z: r * (sVW * sI),
-		}
+		};
+		this.setCached('geocentricCoordinates', out);
+		return out;
 	}
 	get geocentric() { return this.geocentricCoordinates }
 	
@@ -154,13 +181,18 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 	 * @return {object}
 	 */
 	get equatorialCoordinates() {
+		if (this.getCached('equatorialCoordinates')) { return this.getCached('equatorialCoordinates') }
+		
 		const geo = this.geocentricCoordinates,
 			ecl = this.ecl_deg * Math.PI / 180;
-		return {
+		
+		const out = {
 			x: geo.x,
 			y: geo.y * Math.cos(ecl),
 			z: geo.y * Math.sin(ecl),
-		}
+		};
+		this.setCached('equatorialCoordinates', out);
+		return out;
 	}
 	get equatorial() { return this.equatorialCoordinates() }
 }

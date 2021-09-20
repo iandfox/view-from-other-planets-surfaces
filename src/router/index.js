@@ -4,6 +4,7 @@ import SunView from '../views/sandbox-views/SunView.vue'
 import SiderealTimeView from '../views/sandbox-views/SiderealTimeView';
 import AltAzView from '../views/sandbox-views/AltAzView';
 import MoonView from '../views/sandbox-views/MoonView';
+import svgview from '../views/svgview';
 
 const routes = [
 	{
@@ -31,6 +32,11 @@ const routes = [
 		name: 'MoonView',
 		component: MoonView,
 	},
+	{
+		path: '/svg',
+		name: 'SVG-Technique',
+		component: svgview,
+	}
 ];
 
 const router = createRouter({

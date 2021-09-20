@@ -30,7 +30,8 @@ class BaseOrbitalBody {
 			name = 'Unnamed Orbital Body'
 		} = {}
 	) {
-		this.JD = JD;
+		this._JD = JD;
+		this._cache = {};
 		
 		this.params = {N, i, w, a, e, M};
 		this.ecl_param = ecl_param;
@@ -39,6 +40,24 @@ class BaseOrbitalBody {
 		
 		this.clampAngle = clampAngle;
 		this.clampAngle180 = clampAngle180;
+	}
+	
+	get JD() {
+		return this._JD;
+	}
+	set JD(newJD) {
+		this._cache = {};
+		this._JD = newJD;
+	}
+	
+	getCached(key) {
+		if (this._cache[key]) {
+			return this._cache[key];
+		}
+		return null;
+	}
+	setCached(key, val) {
+		this._cache[key] = val;
 	}
 	
 	///
@@ -52,7 +71,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get N_deg() {
-		return this.clampAngle(this.params.N[0] + this.params.N[1] * this.JD);
+		return this.getCached('N_deg') || (this.clampAngle(this.params.N[0] + this.params.N[1] * this.JD));
 	}
 	
 	/**
@@ -62,7 +81,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get i_deg() {
-		return this.clampAngle(this.params.i[0] + this.params.i[1] * this.JD);
+		return this.getCached('i_deg') || (this.clampAngle(this.params.i[0] + this.params.i[1] * this.JD));
 	}
 	
 	/**
@@ -72,7 +91,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get w_deg() {
-		return this.clampAngle(this.params.w[0] + this.params.w[1] * this.JD);
+		return this.getCached('w_deg') || (this.clampAngle(this.params.w[0] + this.params.w[1] * this.JD));
 	}
 	
 	/**
@@ -82,7 +101,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get a() {
-		return this.params.a[0] + this.params.a[1] * this.JD;
+		return this.getCached('a') || (this.params.a[0] + this.params.a[1] * this.JD);
 	}
 	
 	/**
@@ -92,7 +111,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get e() {
-		return this.params.e[0] + this.params.e[1] * this.JD;
+		return this.getCached('e') || (this.params.e[0] + this.params.e[1] * this.JD);
 	}
 	
 	/**
@@ -102,7 +121,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get M_deg() {
-		return this.clampAngle(this.params.M[0] + this.params.M[1] * this.JD);
+		return this.getCached('M_deg') || (this.clampAngle(this.params.M[0] + this.params.M[1] * this.JD));
 	}
 	
 	
@@ -152,7 +171,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get w1_deg() {
-		return this.N_deg + this.w_deg;
+		return this.getCached('w1_deg') || (this.N_deg + this.w_deg);
 	}
 	
 	/**
@@ -162,7 +181,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get L_deg() {
-		return this.M_deg + this.w1_deg;
+		return this.getCached('L_deg') || (this.M_deg + this.w1_deg);
 	}
 	
 	/**
@@ -172,7 +191,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get q() {
-		return this.a * (1 - this.e);
+		return this.getCached('q') || (this.a * (1 - this.e));
 	}
 	
 	/**
@@ -182,7 +201,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get Q() {
-		return this.a * (1 + this.e);
+		return this.getCached('Q') || (this.a * (1 + this.e));
 	}
 	
 	/**
@@ -192,7 +211,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get P() {
-		return Math.pow(this.a, 1.5);
+		return this.getCached('P') || (Math.pow(this.a, 1.5));
 	}
 	
 	/**
@@ -202,7 +221,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get T() {
-		return (this.M_deg / 360) / this.P;
+		return this.getCached('T') || ((this.M_deg / 360) / this.P);
 	}
 	
 	/**
@@ -212,7 +231,7 @@ class BaseOrbitalBody {
 	 * @return {number}
 	 */
 	get ecl_deg() {
-		return this.clampAngle180(this.ecl_param[0] + this.ecl_param[1] * this.JD);
+		return this.getCached('ecl_deg') || (this.clampAngle180(this.ecl_param[0] + this.ecl_param[1] * this.JD));
 	}
 	
 	/**
@@ -230,7 +249,9 @@ class BaseOrbitalBody {
 	 * @see RA
 	 * @return {number}
 	 */
-	get RA_deg() { return this.clampAngle180(this.RA * 180 / Math.PI) }
+	get RA_deg() {
+		return this.getCached('RA_deg') || (this.clampAngle180(this.RA * 180 / Math.PI))
+	}
 	
 	/**
 	 * Declination
@@ -247,7 +268,9 @@ class BaseOrbitalBody {
 	 * @see Decl
 	 * @return {number}
 	 */
-	get Decl_deg() { return this.clampAngle180(this.Decl * 180 / Math.PI) }
+	get Decl_deg() {
+		return this.getCached('Decl_deg') || (this.clampAngle180(this.Decl * 180 / Math.PI))
+	}
 	
 	
 	///

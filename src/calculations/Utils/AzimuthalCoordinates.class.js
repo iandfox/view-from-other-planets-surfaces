@@ -87,6 +87,9 @@ class AzimuthalCoordinates {
 	
 	get alt() { return this.alt_az.alt }
 	get az()  { return this.alt_az.az }
+	
+	get alt_deg() { return this.alt_az.alt_deg }
+	get az_deg()  { return this.alt_az.az_deg }
 }
 
 export {
