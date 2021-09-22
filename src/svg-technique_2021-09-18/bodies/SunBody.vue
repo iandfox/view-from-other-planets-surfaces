@@ -16,7 +16,33 @@
  - @since 2021-09-18
 -->
 
+
+
+
+
+
+
+<!--
+NOT USED AT THE MOMENT
+    cause the MoonBody and the SunBody ended up being exactly the same and I was tired of editing two files. They
+    should definitely be different (e.g. for solar eclipses right?) but for now i'm gonna JUST update the MoonBody file.
+    SunBody should get copy/pasted if and when i need it again.
+    - Ian 2019-09-20 @ 10:35 PM
+-->
+
+
+
+
+
+
+
+
+
 <template>
+	<BodyTail
+		:tail="history"
+		:color="color"
+	/>
 	<circle
 		:cx="x"
 		:cy="y"
@@ -28,14 +54,16 @@
 </template>
 
 <script>
+	import BodyTail from './BodyTail';
+	
 	export default {
 		name: 'SunBody',
-		
+		components: { BodyTail },
 		props: {
-			sun: {
-				type: Object, // Instance of `SunOrbitalBody` class
-				required: true,
-			},
+			// sun: {
+			// 	type: Object, // Instance of `SunOrbitalBody` class
+			// 	required: true,
+			// },
 			color: {
 				type: String,
 				default: 'darkgoldenrod',
@@ -44,71 +72,60 @@
 				type: Number,
 				default: 10,
 			},
-			xKey: {
-				type: String,
-				default: 'RA_deg',
+			// xKey: {
+			// 	type: String,
+			// 	default: 'RA_deg',
+			// },
+			// yKey: {
+			// 	type: String,
+			// 	default: 'Decl_deg',
+			// },
+			x: {
+				type: Number,
 			},
-			yKey: {
-				type: String,
-				default: 'Decl_deg',
-			},
+			y: {
+				type: Number,
+			}
 		},
 		
 		data() {
 			return {
-				cssTransitionTime: '0.1s'
+				cssTransitionTime: '0.1s',
+				history: [],
+				isAddingToHistory: false,
 			};
 		},
 		
-		computed: {
-			x() {
-				const xKeys = this.xKey.split('.');
-				let val = this.sun;
-				xKeys.forEach((key) => {
-					val = val[key];
-				});
-				return val;
-			},
-			
-			y() {
-				const yKeys = this.yKey.split('.');
-				let val = this.sun;
-				yKeys.forEach((key) => {
-					val = val[key];
-				});
-				return val;
-			},
-		},
-		
 		watch: {
-			x(newValue, oldValue) {
-				if (Math.sign(newValue) !== Math.sign(oldValue) && Math.abs(newValue) > 20) { // ugly hack to see if it goes across screen, but ignore when it goes across an axis. "20" is magic num
-					this.pauseCssTransitions();
+			x() {
+				if (! this.isAddingToHistory) {
+					this.isAddingToHistory = true;
+					this.addCurrentToHistory();
+					this.isAddingToHistory = false;
 				}
 			},
-			
-			y(newValue, oldValue) {
-				if (Math.sign(newValue) !== Math.sign(oldValue) && Math.abs(newValue) > 20) { // ugly hack to see if it goes across screen, but ignore when it goes across an axis. "20" is magic num
-					this.pauseCssTransitions();
+			y() {
+				if (! this.isAddingToHistory) {
+					this.isAddingToHistory = true;
+					this.addCurrentToHistory();
+					this.isAddingToHistory = false;
 				}
 			},
 		},
 		
 		methods: {
-			pauseCssTransitions() {
-				// don't want objects to transition incorrectly across screen
-				this.cssTransitionTime = '0s';
-				
-				setTimeout(() => {
-					this.cssTransitionTime = '0.1s';
-				}, 100);
-			}
+			addCurrentToHistory() {
+				this.history.push({x: this.x, y: this.y});
+				if (this.history.length > 100) {
+					this.history.shift();
+				}
+			},
 		},
 	}
 </script>
 
 <style scoped>
 	circle {
-		transition-duration: v-bind(cssTransitionTime);
+		/*transition-duration: v-bind(cssTransitionTime);*/
 	}
 </style>

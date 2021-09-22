@@ -17,6 +17,10 @@
 -->
 
 <template>
+	<BodyTail
+		:tail="history"
+		:color="color"
+	/>
 	<circle
 		:cx="x"
 		:cy="y"
@@ -28,14 +32,13 @@
 </template>
 
 <script>
+	import BodyTail from './BodyTail';
+	
 	export default {
+		// TODO 2021-09-20: maybe just make this a more generic "body" ?
 		name: 'MoonBody',
-		
+		components: {BodyTail},
 		props: {
-			moon: {
-				type: Object, // Instance of `MoonOrbitalBody` class
-				required: true,
-			},
 			color: {
 				type: String,
 				default: 'lightblue',
@@ -44,72 +47,58 @@
 				type: Number,
 				default: 4,
 			},
-			xKey: {
-				type: String,
-				default: 'azi.az_deg',
+			x: {
+				type: Number,
 			},
-			yKey: {
-				type: String,
-				default: 'azi.alt_deg',
-			}
+			y: {
+				type: Number,
+			},
 		},
 		
 		data() {
 			return {
-				cssTransitionTime: '0.1s',
+				history: [],
+				isAddingToHistory: false,
+				typicalTailLength: 10,
+				
+				radiusOfRepetition: Math.pow(10, 2), // make sure it's squared, cause i don't wanna do a square root every frame.
 			};
 		},
 		
-		computed: {
-			x() {
-				const xKeys = this.xKey.split('.');
-				let val = this.moon;
-				xKeys.forEach((key) => {
-					val = val[key];
-				});
-				return val;
-			},
-			
-			y() {
-				const yKeys = this.yKey.split('.');
-				let val = this.moon;
-				yKeys.forEach((key) => {
-					val = val[key];
-				});
-				return val;
-			},
-		},
-		
-		
 		watch: {
-			x(newValue, oldValue) {
-				if (Math.sign(newValue) !== Math.sign(oldValue) && Math.abs(newValue) > 20) { // ugly hack to see if it goes across screen, but ignore when it goes across an axis. "20" is magic num
-					this.pauseCssTransitions();
+			x() {
+				if (! this.isAddingToHistory) {
+					this.isAddingToHistory = true;
+					this.addCurrentToHistory();
+					this.isAddingToHistory = false;
 				}
 			},
-			
-			y(newValue, oldValue) {
-				if (Math.sign(newValue) !== Math.sign(oldValue) && Math.abs(newValue) > 20) { // ugly hack to see if it goes across screen, but ignore when it goes across an axis
-					this.pauseCssTransitions();
+			y() {
+				if (! this.isAddingToHistory) {
+					this.isAddingToHistory = true;
+					this.addCurrentToHistory();
+					this.isAddingToHistory = false;
 				}
 			},
 		},
 		
 		methods: {
-			pauseCssTransitions() {
-				// don't want objects to transition incorrectly across screen
-				this.cssTransitionTime = '0s';
+			addCurrentToHistory() {
+				this.history.push({x: this.x, y: this.y});
 				
-				setTimeout(() => {
-					this.cssTransitionTime = '0.1s';
-				}, 100);
-			}
+				if (this.history.length > this.typicalTailLength) {
+					this.history.shift();
+					return;
+				} else if (this.history.length > 100) { // don't look at it too soon, or it'll trigger the new, smaller size of tail length
+					// stop recording history (and observe what index we're at) if we have gotten sufficiently close to the zeroth history item -- i.e. we are starting to repeat.
+					if ((Math.pow(this.history[this.history.length - 1].x - this.history[0].x, 2) + Math.pow(this.history[this.history.length - 1].y - this.history[0].y, 2)) < this.radiusOfRepetition) {
+						console.log('new tail length', this.history.length); // todo delete
+						this.typicalTailLength = 0.9 * this.history.length;
+						this.history.shift();
+						return;
+					}
+				}
+			},
 		},
 	}
 </script>
-
-<style scoped>
-	circle {
-		transition-duration: v-bind(cssTransitionTime);
-	}
-</style>

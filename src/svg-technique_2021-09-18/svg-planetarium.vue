@@ -11,6 +11,8 @@
 -->
 
 <template>
+	{{(Math.floor(debug._dt)).toString().padStart(3, ' ')}}<br>
+	{{(Math.floor(debug._fps)).toString().padStart(3, ' ')}}<br>
 	<div class="form">
 		<div class="inline stacked fields">
 			<label>Julian Date</label>
@@ -71,39 +73,20 @@
 			:width="config.tickMark.width"
 		/>
 		
-		<SunBody
-			:sun="sun"
-			:color="'darkgoldenrod'"
-			:radius="5"
-			:x-key="'azi.az_deg'"
-			:y-key="'azi.alt_deg'"
+		<MoonBody
+			:color="sun.color"
+			:radius="sun.radius"
+			:x="sun.azi.az_deg"
+			:y="sun.azi.alt_deg"
 		/>
 		
 		<MoonBody
-			:moon="moons[0]"
-			:color="moons[0].color"
-			:radius="moons[0].radius"
-			:x-key="'azi.az_deg'"
-			:y-key="'azi.alt_deg'"
+			v-for="moon in moons"
+			:color="moon.color"
+			:radius="moon.radius"
+			:x="moon.azi.az_deg"
+			:y="moon.azi.alt_deg"
 		/>
-		
-		<!--
-		<MoonBody
-			:moon="moons[1]"
-			:color="moons[1].color"
-			:radius="moons[1].radius"
-			:x-key="'RA_deg'"
-			:y-key="'Decl_deg'"
-		/>
-		
-		<MoonBody
-			:moon="moons[2]"
-			:color="moons[2].color"
-			:radius="moons[2].radius"
-			:x-key="'RA_deg'"
-			:y-key="'Decl_deg'"
-		/>
-		-->
 		
 		<!--
 		
@@ -156,6 +139,17 @@
 			
 			const moonsParams = [
 				{
+					name: 'F\'an',
+					color: 'tan',
+					radius: 3,
+					N: [125.1228, - 0.0529538083],
+					i: [35.1454, 0],
+					w: [318.0634, 0.1643573223],
+					a: [60.2666, 0], // in Earth radii
+					e: [0.054900, 0],
+					M: [0.3654, 53.0649929509],
+				},
+				/*{
 					name: 'Moon', // Earth's Moon
 					color: 'grey',
 					radius: 5,
@@ -165,22 +159,11 @@
 					a: [60.2666, 0], // in Earth radii
 					e: [0.054900, 0],
 					M: [115.3654, 13.0649929509],
-				},
-				{
-					name: 'F\'an',
-					color: 'orange',
-					radius: 15,
-					N: [125.1228, - 0.0529538083],
-					i: [35.1454, 0],
-					w: [318.0634, 0.1643573223],
-					a: [60.2666, 0], // in Earth radii
-					e: [0.054900, 0],
-					M: [0.3654, 53.0649929509],
-				},
+				},*/
 				{
 					name: 'Gomor',
-					color: 'teal',
-					radius: 40,
+					color: 'skyblue',
+					radius: 7,
 					N: [125.1228, -0.0529538083],
 					i: [5.1454, 0],
 					w: [8.0634, 0.1643573223],
@@ -190,24 +173,13 @@
 				}
 			];
 			
-			// TODO: Do the instances need to be reactive, as we did above? i think that since they're in a `ref` array they are already there, but i'll have to refresh my memory
-			moons.value.push(new MoonOrbitalBody(2459404.5, moonsParams[0], {
-				color:  moonsParams[0].color,
-				radius: moonsParams[0].radius,
-				name:   moonsParams[0].name,
-			}));
-			
-			moons.value.push(new MoonOrbitalBody(2459404.5, moonsParams[1], {
-				color:  moonsParams[1].color,
-				radius: moonsParams[1].radius,
-				name:   moonsParams[1].name,
-			}));
-			
-			moons.value.push(new MoonOrbitalBody(2459404.5, moonsParams[2], {
-				color:  moonsParams[2].color,
-				radius: moonsParams[2].radius,
-				name:   moonsParams[2].name,
-			}));
+			moonsParams.forEach((params) => {
+				moons.value.push(new MoonOrbitalBody(2459404.5, params, {
+					color: params.color,
+					radius: params.radius,
+					name: params.name,
+				}))
+			});
 			
 			sun.azi = new AzimuthalCoordinates(sun, sun);
 			moons.value.forEach((moon) => {
@@ -226,6 +198,11 @@
 			return {
 				julianDate: 2459404.5,
 				
+				debug: {
+					_fps: -1,
+					_dt: -1,
+				},
+				
 				config: {
 					tickMark: {
 						color: 'yellow',
@@ -238,9 +215,9 @@
 					localLatitude: 32.198840114469995,
 					obliquity: 23.4393,
 					
-					intervalIds: [],
+					intervalIds: [-1],
 					isPlaying: true,
-					autoplayStep: 0.1,
+					autoplayStep: 1 / 24,
 					
 					// viewport: {
 					// 	bottom: -90,
@@ -296,15 +273,27 @@
 		},
 		
 		methods: {
+			loop(then) {
+				const now = performance.now();
+				const dt = now - then;
+				this.debug._dt = now - then; // todo delte
+				this.debug._fps = Math.floor(1000 / this.debug._dt); // todo delte
+				if (this.config.isPlaying) {
+					this.julianDate += (this.config.autoplayStep / 1000) * dt;
+				}
+				this.config.intervalIds[0] = requestAnimationFrame(() => { this.loop(now) });
+			},
+			
+			
 			startPlaying(autoplayStep = 0.1) {
 				this.config.isPlaying = true;
 				this.config.autoplayStep = autoplayStep;
 				
-				this.clearIntervals();
-				const intervalId = setInterval(() => {
-					this.julianDate += this.config.autoplayStep;
-				}, 100);
-				this.config.intervalIds.push(intervalId);
+				// this.clearIntervals();
+				// const intervalId = setInterval(() => {
+				// 	this.julianDate += this.config.autoplayStep;
+				// }, 100);
+				// this.config.intervalIds.push(intervalId);
 			},
 			
 			playFaster(dir = 1) {
@@ -324,12 +313,14 @@
 				this.config.intervalIds.forEach((id) => {
 					window.clearInterval(id);
 					window.clearTimeout(id);
+					window.cancelAnimationFrame(id);
 				});
 			},
 		},
 		
 		mounted() {
-			this.startPlaying(1/24/60); // autoplay speed of 1 minute. a pleasant default setting -- 1 hour is too fast! 1 sec = 1 min is also easy to grok, and you still can see motion
+			// this.startPlaying(1 / 24 / 60); // autoplay speed of 1 minute. a pleasant default setting -- 1 hour is too fast! 1 sec = 1 min is also easy to grok, and you still can see motion
+			this.loop(performance.now());
 		},
 		
 		unmounted() {
@@ -342,6 +333,6 @@
 
 <style>
 	circle {
-		transition: all 0.1s linear;
+		/*transition: all 0.1s linear;*/
 	}
 </style>
