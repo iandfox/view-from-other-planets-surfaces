@@ -1,4 +1,12 @@
-# moonviewer
+# moonviewer - view the night sky of another solar system
+
+Visualize the night sky from the surface of planet(s) from different solar systems. Made for my D&D campaign to see what eclipses would be like to experience.
+
+This is much slower than I'd like it to be, but it represents the best (and most recent) iteration of this toy that I've rewritten quite a few times.
+
+I've included some older iterations of the code. Older versions had performance issues that couldn't easily be resolved because of the slapdash way I had written them (this started as a codepen).
+
+Calculating the positions of planets is hard, if you're curious.
 
 ## Project setup
 ```
@@ -9,11 +17,3 @@ npm install
 ```
 npm run serve
 ```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
