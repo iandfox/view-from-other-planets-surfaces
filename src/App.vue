@@ -41,7 +41,9 @@
 	}
 	
 	#nav {
-		padding: 30px;
+		padding: 33px;
+		z-index: 100;
+		position: relative;
 		
 		a {
 			font-weight: bold;
