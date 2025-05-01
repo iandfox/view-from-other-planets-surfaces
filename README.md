@@ -32,6 +32,10 @@ npm run serve
 ### SVG (much faster) view. WiP
 ![](https://github.com/user-attachments/assets/6d6debc6-7862-4ae7-af9e-38c79d167501)
 
+This gif has a slower FPS than the app:
+![](https://github.com/user-attachments/assets/2915cc78-83f5-4ed3-819a-9dccd92ec82b)
+
+
 
 ## About the code
 
