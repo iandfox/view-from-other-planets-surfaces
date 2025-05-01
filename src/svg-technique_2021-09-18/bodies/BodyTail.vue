@@ -14,66 +14,83 @@
 -->
 
 <template>
-	<path :d="path" fill="none" :stroke="color" stroke-width="0.2" />
+	<path :d="path" fill="none" :stroke="color" :stroke-width="strokeWidth"/>
 </template>
 
 <script>
-	export default {
-		name: 'BodyTail',
-		
-		props: {
-			tail: {
-				type: Array,
-				required: true,
-			},
-			color: {
-				type: String,
-				required: false,
-				default: 'white',
+export default {
+	name: 'BodyTail',
+
+	props: {
+		tail: {
+			type: Array,
+			required: true,
+		},
+		color: {
+			type: String,
+			required: false,
+			default: 'white',
+		},
+		strokeWidth: {
+			type: Number,
+			required: false,
+			default: 0.2,
+		},
+	},
+
+	data() {
+		return {
+			path: '',
+		};
+	},
+
+	computed: {
+		lastX() {
+			if (this.tail.length > 2) {
+				return this.tail[this.tail.length - 1].x;
 			}
+			return - 1;
 		},
-		
-		data() {
-			return {
-				path: '',
-			};
+	},
+
+	watch: {
+		lastX(newValue, oldValue) {
+			this.addToPath(newValue, this.tail[this.tail.length - 1].y, (newValue < oldValue));
 		},
-		
-		computed: {
-			lastX() {
-				if (this.tail.length > 2) {
-					return this.tail[this.tail.length - 1].x;
-				}
-				return -1;
-			},
-		},
-		
-		watch: {
-			lastX(newValue, oldValue) {
-				this.addToPath(newValue, this.tail[this.tail.length - 1].y, (newValue < oldValue));
-			},
-			
-			tail(newValue, oldValue) {
-				if (newValue.length !== oldValue.length) {
-					const {x, y} = this.tail[this.tail.length - 1];
-					this.addToPath(x, y, (newValue.x < oldValue.x));
-				}
+
+		tail(newValue, oldValue) {
+			if (newValue.length !== oldValue.length) {
+				const {x, y} = this.tail[this.tail.length - 1];
+				this.addToPath(x, y, (newValue.x < oldValue.x));
 			}
+		}
+	},
+
+	methods: {
+		addToPath(x, y, isNewLessThanOld = false) {
+			if (this.path === '') {
+				this.path += 'M';
+			} else if (isNewLessThanOld) {
+				this.path += ', M';
+			} else {
+				this.path += ', L';
+			}
+			this.path += x + ' ' + y;
 		},
-		
-		methods: {
-			addToPath(x, y, isNewLessThanOld = false) {
-				if (this.path === '') {
-					this.path += 'M';
-				} else if (isNewLessThanOld) {
-					this.path += ', M';
-				} else {
-					this.path += ', L';
+	},
+
+	created() {
+		if (this.tail) {
+			this.tail.forEach(({x, y}, index) => {
+				let isNewLessThanOld = false;
+				if (index > 0) {
+					isNewLessThanOld = (x < this.tail[index - 1].x);
 				}
-				this.path += x + ' ' + y;
-			},
-		},
-	}
+				this.addToPath(x, y, isNewLessThanOld);
+			});
+		}
+	},
+}
 </script>
 
 <style scoped>
