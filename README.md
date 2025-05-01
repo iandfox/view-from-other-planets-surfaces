@@ -1,6 +1,8 @@
 # moonviewer - view the night sky of another solar system
 
-Visualize the night sky from the surface of planet(s) from different solar systems. Made for my D&D campaign to see what eclipses would be like to experience.
+Visualize the night sky from the surface of planet(s) from different solar systems. Made for my D&D campaign to see what eclipses would be like to experience. Also, it's just supa fun to watch.
+
+![](https://github.com/user-attachments/assets/2915cc78-83f5-4ed3-819a-9dccd92ec82b)
 
 > This was written when Vue 3 first came out, and so a lot of the Vue 3 techniques are out-of-date. I'm not sure, but I don't think it even had the `<script setup>` sugar. Good times. Anyway, I should update it.  
 
@@ -31,9 +33,6 @@ npm run serve
 
 ### SVG (much faster) view. WiP
 ![](https://github.com/user-attachments/assets/6d6debc6-7862-4ae7-af9e-38c79d167501)
-
-This gif has a slower FPS than the app:
-![](https://github.com/user-attachments/assets/2915cc78-83f5-4ed3-819a-9dccd92ec82b)
 
 
 
