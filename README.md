@@ -20,6 +20,19 @@ npm install
 npm run serve
 ```
 
+## Screenshots
+
+> Note 2025-05: As of me writing this bit of the README, the app doesn't have any significant CSS applied. That's unusual for me, and was also an intentional choice on my part. I had a tendency to get lost in the CSS for toys such as this. None of the views are permanent, they mostly as a sandbox for the rest of my tools. Once I get those in order, I will work on a really cool looking page for it. But at the moment I'm not even sure what will be interesting to show! The 3D diagram pop-up? Seems neat. Backgrounds? Stars? Only show above the horizon, or show "below the earth" as well? The list goes on. I already made the mistake of trying to pre-solve these things in the past, but no more!
+>
+> Anyway my point is, this whole thing reeks of programmer art.
+
+### Normal (s l o w) view w/ 3D diagram
+![](https://github.com/user-attachments/assets/b01897a6-37c3-4e5b-a5f7-4094f079a1ab)
+
+### SVG (much faster) view. WiP
+![](https://github.com/user-attachments/assets/6d6debc6-7862-4ae7-af9e-38c79d167501)
+
+
 ## About the code
 
 Previous rewrites taught me three important lessons:
