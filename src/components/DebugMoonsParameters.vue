@@ -54,9 +54,9 @@
 </style>
 <style>
 	body {
-		max-height: 100vh;
-		max-width: 100vw;
-		overflow: hidden;
+		/*max-height: 100vh;*/
+		/*max-width: 100vw;*/
+		/*overflow: hidden;*/
 	}
 	
 	/* TODO 2021-07-15: delete */

@@ -1,10 +1,11 @@
+import TableView                            from '../views/sandbox-views/TableView';
 import {createRouter, createWebHashHistory} from 'vue-router'
-import Home from '../views/Home.vue'
-import SunView from '../views/sandbox-views/SunView.vue'
-import SiderealTimeView from '../views/sandbox-views/SiderealTimeView';
-import AltAzView from '../views/sandbox-views/AltAzView';
-import MoonView from '../views/sandbox-views/MoonView';
-import svgview from '../views/svgview';
+import Home                                 from '../views/Home.vue'
+import SunView                              from '../views/sandbox-views/SunView.vue'
+import SiderealTimeView                     from '../views/sandbox-views/SiderealTimeView';
+import AltAzView                            from '../views/sandbox-views/AltAzView';
+import MoonView                             from '../views/sandbox-views/MoonView';
+import svgview                              from '../views/svgview';
 
 const routes = [
 	{
@@ -36,6 +37,11 @@ const routes = [
 		path: '/svg',
 		name: 'SVG-Technique',
 		component: svgview,
+	},
+	{
+		path: '/sandbox/table',
+		name: 'SandboxTable',
+		component: TableView,
 	}
 ];
 

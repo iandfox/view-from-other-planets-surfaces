@@ -25,6 +25,18 @@ class SunOrbitalBody extends BaseOrbitalBody {
 		super(JD, {}, {color: 'yellow', radius: 5});
 	}
 	
+	clone() {
+		const newSun = new SunOrbitalBody(
+			this.JD,
+			JSON.parse(JSON.stringify(this.params)),
+			{color: this.color, radius: this.radius, name: this.name}
+		);
+		
+		// TODO 2021-10-25: is there a way to clone `this.azi` without importing the entirety of AzimuthalCoordinates? Maybe not.
+		
+		return newSun;
+	}
+	
 	///
 	/// Sun-specific
 	///

@@ -59,6 +59,35 @@ class BaseOrbitalBody {
 	setCached(key, val) {
 		this._cache[key] = val;
 	}
+
+	get az_deg() {
+		if (! this.azi) {
+			console.warn('Tried to get this.azi from an orbital body without .azi');
+			return 0;
+		}
+		if (! this.getCached('az_deg')) {
+			this.setCached('az_deg', this.azi.az_deg);
+		}
+		return this.getCached('az_deg')
+	}
+
+	get alt_deg() {
+		if (! this.azi) {
+			console.warn('Tried to get this.azi from an orbital body without .azi');
+			return 0;
+		}
+		if (! this.getCached('alt_deg')) {
+			this.setCached('alt_deg', this.azi.alt_deg);
+		}
+		return this.getCached('alt_deg')
+	}
+	
+	
+	clone() {
+		console.warn('!  has not been implemented !');
+		// return null;
+	}
+	
 	
 	///
 	/// Primary Orbital Elements

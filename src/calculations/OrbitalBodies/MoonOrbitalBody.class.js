@@ -26,6 +26,17 @@ class MoonOrbitalBody extends BaseOrbitalBody {
 		super(JD, params, options);
 	}
 	
+	// @since 2021-10-25
+	clone() {
+		const newMoon = new MoonOrbitalBody(
+			this.JD,
+			JSON.parse(JSON.stringify(this.params)),
+		{color: this.color, radius: this.radius, name: this.name}
+		);
+		
+		return newMoon;
+	}
+	
 	
 	///
 	/// Related Orbital Elements
